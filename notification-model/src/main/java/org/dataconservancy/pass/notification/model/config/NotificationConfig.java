@@ -15,11 +15,14 @@
  */
 package org.dataconservancy.pass.notification.model.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.config.smtp.SmtpServerConfig;
 import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -27,23 +30,84 @@ import java.util.Map;
 public class NotificationConfig {
 
     /**
-     * Mode of Notification Services (e.g. "disabled", "demo", "production")
+     * Runtime mode of Notification Services (e.g. "disabled", "demo", "production")
      */
-    private String mode;
+    private Mode mode;
 
     /**
      * Each Notification type has a set of templates
      */
-    private Map<Notification.Type, TemplatePrototype> templates;
+    private Collection<TemplatePrototype> templates;
 
     /**
-     * Each Notification Service mode has a recipientConfig (makes the most sense for "demo" mode)
+     * Each Notification Service mode has a recipientConfig
      */
-    private Map<Mode.MODE, RecipientConfig> recipientConfigs;
+    @JsonProperty("recipient-config")
+    private Collection<RecipientConfig> recipientConfigs;
 
     /**
      * Global Notification Service SMTP server configuration
      */
+    @JsonProperty("smtp")
     private SmtpServerConfig smtpConfig;
 
+    public Mode getMode() {
+        return mode;
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
+    public Collection<TemplatePrototype> getTemplates() {
+        return templates;
+    }
+
+    public void setTemplates(Collection<TemplatePrototype> templates) {
+        this.templates = templates;
+    }
+
+    public Collection<RecipientConfig> getRecipientConfigs() {
+        return recipientConfigs;
+    }
+
+    public void setRecipientConfigs(Collection<RecipientConfig> recipientConfigs) {
+        this.recipientConfigs = recipientConfigs;
+    }
+
+    public SmtpServerConfig getSmtpConfig() {
+        return smtpConfig;
+    }
+
+    public void setSmtpConfig(SmtpServerConfig smtpConfig) {
+        this.smtpConfig = smtpConfig;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        NotificationConfig that = (NotificationConfig) o;
+        return Objects.equals(mode, that.mode) &&
+                Objects.equals(templates, that.templates) &&
+                Objects.equals(recipientConfigs, that.recipientConfigs) &&
+                Objects.equals(smtpConfig, that.smtpConfig);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mode, templates, recipientConfigs, smtpConfig);
+    }
+
+    @Override
+    public String toString() {
+        return "NotificationConfig{" +
+                "mode='" + mode + '\'' +
+                ", templates=" + templates +
+                ", recipientConfigs=" + recipientConfigs +
+                ", smtpConfig=" + smtpConfig +
+                '}';
+    }
 }

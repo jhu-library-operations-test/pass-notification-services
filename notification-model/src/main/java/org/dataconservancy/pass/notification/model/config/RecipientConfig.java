@@ -15,7 +15,11 @@
  */
 package org.dataconservancy.pass.notification.model.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
 
 /**
  * Allows recipients of a notification to be overridden depending on the Notification Service mode.
@@ -27,12 +31,13 @@ public class RecipientConfig {
     /**
      * The Notification Service mode (e.g. "demo", "prod")
      */
-    private String mode;
+    private Mode mode;
 
     /**
      * All notifications for {@link #mode} will be sent to this recipient
      */
-    private String globalCc;
+    @JsonProperty("global_cc")
+    private Collection<String> globalCc;
 
     /**
      * Whitelisted recipients for {@link #mode} will receive notifications directly.  If the recipient on the
@@ -53,4 +58,51 @@ public class RecipientConfig {
      */
     private Collection<String> whitelist;
 
+    public Mode getMode() {
+        return mode;
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
+    public Collection<String> getGlobalCc() {
+        return globalCc;
+    }
+
+    public void setGlobalCc(Collection<String> globalCc) {
+        this.globalCc = globalCc;
+    }
+
+    public Collection<String> getWhitelist() {
+        return whitelist;
+    }
+
+    public void setWhitelist(Collection<String> whitelist) {
+        this.whitelist = whitelist;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RecipientConfig that = (RecipientConfig) o;
+        return mode == that.mode &&
+                Objects.equals(globalCc, that.globalCc) &&
+                Objects.equals(whitelist, that.whitelist);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mode, globalCc, whitelist);
+    }
+
+    @Override
+    public String toString() {
+        return "RecipientConfig{" +
+                "mode=" + mode +
+                ", globalCc=" + globalCc +
+                ", whitelist=" + whitelist +
+                '}';
+    }
 }

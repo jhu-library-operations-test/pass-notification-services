@@ -15,6 +15,8 @@
  */
 package org.dataconservancy.pass.notification.model.config.smtp;
 
+import java.util.Objects;
+
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
@@ -24,10 +26,65 @@ public class SmtpServerConfig {
 
     private String port;
 
-    private boolean secure;
+    private boolean secure = true;
 
     private String smtpUser;
 
     private String smtpPassword;
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public void setSecure(boolean secure) {
+        this.secure = secure;
+    }
+
+    public String getSmtpUser() {
+        return smtpUser;
+    }
+
+    public void setSmtpUser(String smtpUser) {
+        this.smtpUser = smtpUser;
+    }
+
+    public String getSmtpPassword() {
+        return smtpPassword;
+    }
+
+    public void setSmtpPassword(String smtpPassword) {
+        this.smtpPassword = smtpPassword;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        SmtpServerConfig that = (SmtpServerConfig) o;
+        return secure == that.secure && Objects.equals(host, that.host) && Objects.equals(port, that.port) && Objects.equals(smtpUser, that.smtpUser) && Objects.equals(smtpPassword, that.smtpPassword);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(host, port, secure, smtpUser, smtpPassword);
+    }
 
 }

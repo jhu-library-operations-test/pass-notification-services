@@ -15,21 +15,88 @@
  */
 package org.dataconservancy.pass.notification.model.config.template;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dataconservancy.pass.notification.model.Notification;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class TemplatePrototype {
 
+    enum Name {
+
+        SUBJECT("subject"),
+        BODY("body"),
+        FOOTER("footer");
+
+        private String templateName;
+
+        private Name(String templateName) {
+            this.templateName = templateName;
+        }
+
+        String templateName() {
+            return templateName;
+        }
+
+    }
+
     /**
-     * Inline body or a URI to the body
+     * Inline bodies or a URI to the bodies
      */
-    private String body;
+    private Map<Name, String> bodies = new HashMap<>(Name.values().length);
 
     /**
      * The type of notification this template is associated with
      */
+    @JsonProperty("notification")
     private Notification.Type notificationType;
 
+    public Map<Name, String> getBodies() {
+        return bodies;
+    }
+
+    public void setBodies(Map<Name, String> bodies) {
+        this.bodies = bodies;
+    }
+
+    public void addBody(Name name, String body) {
+        bodies.put(name, body);
+    }
+
+    public Notification.Type getNotificationType() {
+        return notificationType;
+    }
+
+    public void setNotificationType(Notification.Type notificationType) {
+        this.notificationType = notificationType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        TemplatePrototype that = (TemplatePrototype) o;
+        return Objects.equals(bodies, that.bodies) &&
+                notificationType == that.notificationType;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bodies, notificationType);
+    }
+
+    @Override
+    public String toString() {
+        return "TemplatePrototype{" +
+                "bodies=" + bodies +
+                ", notificationType=" + notificationType +
+                '}';
+    }
 }
