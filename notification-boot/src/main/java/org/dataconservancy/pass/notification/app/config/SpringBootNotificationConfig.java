@@ -25,8 +25,8 @@ import org.springframework.context.annotation.Configuration;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @Configuration
-public class NotificationConfig {
+public class SpringBootNotificationConfig {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NotificationConfig.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SpringBootNotificationConfig.class);
 
 }

@@ -15,7 +15,7 @@
  */
 package org.dataconservancy.pass.notification.app;
 
-import org.dataconservancy.pass.notification.app.config.NotificationConfig;
+import org.dataconservancy.pass.notification.app.config.SpringBootNotificationConfig;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Import;
  */
 @SpringBootApplication
 @ComponentScan("org.dataconservancy.pass")
-@Import(NotificationConfig.class)
+@Import(SpringBootNotificationConfig.class)
 public class NotificationApp {
 
     /**
