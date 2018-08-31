@@ -18,6 +18,7 @@ package org.dataconservancy.pass.notification.model;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Encapsulates {@link Notification} metadata used to dispatch the notification.
@@ -59,4 +60,81 @@ public class SimpleNotification implements Notification {
      */
     private URI resourceUri;
 
+    public String getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
+    }
+
+    public Collection<String> getCc() {
+        return cc;
+    }
+
+    public void setCc(Collection<String> cc) {
+        this.cc = cc;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public Map<String, ?> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, ?> parameters) {
+        this.parameters = parameters;
+    }
+
+    public URI getEventUri() {
+        return eventUri;
+    }
+
+    public void setEventUri(URI eventUri) {
+        this.eventUri = eventUri;
+    }
+
+    public URI getResourceUri() {
+        return resourceUri;
+    }
+
+    public void setResourceUri(URI resourceUri) {
+        this.resourceUri = resourceUri;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SimpleNotification that = (SimpleNotification) o;
+        return Objects.equals(recipient, that.recipient) &&
+                Objects.equals(cc, that.cc) &&
+                type == that.type &&
+                Objects.equals(parameters, that.parameters) &&
+                Objects.equals(eventUri, that.eventUri) &&
+                Objects.equals(resourceUri, that.resourceUri);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(recipient, cc, type, parameters, eventUri, resourceUri);
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleNotification{" +
+                "recipient='" + recipient + '\'' +
+                ", cc=" + cc +
+                ", type=" + type +
+                ", parameters=" + parameters +
+                ", eventUri=" + eventUri +
+                ", resourceUri=" + resourceUri +
+                '}';
+    }
 }

@@ -15,6 +15,10 @@
  */
 package org.dataconservancy.pass.notification.model;
 
+import java.net.URI;
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * Represents a Notification that is to be dispatched to a set of recipients.
  *
@@ -123,5 +127,17 @@ public interface Notification {
         }
 
     }
+
+    String getRecipient();
+
+    Collection<String> getCc();
+
+    Type getType();
+
+    Map<String, ?> getParameters();
+
+    URI getEventUri();
+
+    URI getResourceUri();
 
 }
