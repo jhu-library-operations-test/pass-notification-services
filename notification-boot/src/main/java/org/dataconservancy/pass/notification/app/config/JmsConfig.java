@@ -1,0 +1,92 @@
+/*
+ *
+ *  * Copyright 2018 Johns Hopkins University
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *     http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
+package org.dataconservancy.pass.notification.app.config;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.support.messaging.constants.Constants;
+import org.dataconservancy.pass.support.messaging.json.JsonParser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.jms.annotation.EnableJms;
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import org.springframework.jms.support.JmsHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.handler.annotation.Header;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Session;
+
+@EnableJms
+public class JmsConfig {
+
+    @Autowired
+    private JsonParser jsonParser;
+
+    @Autowired
+    private PassClient passClient;
+
+    @Bean
+    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(@Value("${spring.jms.listener.concurrency}")
+                                                                                  String concurrency,
+                                                                          @Value("${spring.jms.listener.auto-startup}")
+                                                                                  boolean autoStart,
+                                                                          ConnectionFactory connectionFactory) {
+        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+        factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
+        // TODO: JmsListenerContainerFactory ErrorHandler
+        // factory.setErrorHandler(errorHandler);
+        factory.setConcurrency(concurrency);
+        factory.setConnectionFactory(connectionFactory);
+        factory.setAutoStartup(autoStart);
+        return factory;
+    }
+
+    @JmsListener(destination = "${pass.notification.queue.event.name}", containerFactory = "jmsListenerContainerFactory")
+    public void processMessage(@Header(Constants.JmsFcrepoHeader.FCREPO_RESOURCE_TYPE) String resourceType,
+                                         @Header(Constants.JmsFcrepoHeader.FCREPO_EVENT_TYPE) String eventType,
+                                         @Header(JmsHeaders.TIMESTAMP) long timeStamp,
+                                         @Header(JmsHeaders.MESSAGE_ID) String id,
+                                         Session session,
+                                         Message<String> message,
+                                         javax.jms.Message jmsMessage) {
+
+        // TODO: implement
+
+        if (!resourceType.equals(Constants.PassType.SUBMISSION_EVENT_RESOURCE) ||
+                !eventType.equals(Constants.JmsFcrepoEvent.RESOURCE_CREATION)) {
+            try {
+                jmsMessage.acknowledge();
+            } catch (JMSException e) {
+                // ignore
+            }
+            return;
+        }
+
+        String eventUri = jsonParser.parseId(message.getPayload().getBytes());
+
+
+
+    }
+
+}
