@@ -50,9 +50,9 @@ public interface Notification {
         SUBMISSION_CHANGES_REQUESTED,
 
         /**
-         * Submission was successfully submitted by the Authorized Submitter
+         * Submission was submitted by the Authorized Submitter
          */
-        SUBMISSION_SUBMISSION_SUCCESS,
+        SUBMISSION_SUBMISSION_SUBMITTED,
 
         /**
          * Submission was cancelled by either the Authorized Submitter or Preparer
@@ -128,16 +128,18 @@ public interface Notification {
 
     }
 
-    String getRecipient();
+    Collection<String> getRecipients();
 
     Collection<String> getCc();
 
     Type getType();
 
-    Map<String, ?> getParameters();
+    Map<Param, String> getParameters();
 
     URI getEventUri();
 
     URI getResourceUri();
+
+    String getSender();
 
 }

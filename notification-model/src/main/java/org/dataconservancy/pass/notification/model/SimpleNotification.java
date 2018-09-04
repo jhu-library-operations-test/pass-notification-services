@@ -28,12 +28,17 @@ import java.util.Objects;
 public class SimpleNotification implements Notification {
 
     /**
-     * The primary recipient of the notification, may be a URI to a PASS {@code User} (undecided in this regard)
+     * The primary recipients of the notification, may URIs to a PASS {@code User} or 'mailto' URIs
      */
-    private String recipient;
+    private Collection<String> recipients;
 
     /**
-     * Additional recipients, may be URIs to PASS {@code User}s (undecided in this regard)
+     * The sender of the notification.
+     */
+    private String sender;
+
+    /**
+     * Additional recipients, may be URIs to PASS {@code User}s
      */
     private Collection<String> cc;
 
@@ -47,7 +52,7 @@ public class SimpleNotification implements Notification {
      *
      * @see Notification.Param
      */
-    private Map<String, ?> parameters;
+    private Map<Param, String> parameters;
 
     /**
      * The link to the {@code SubmissionEvent} this notification is in response to
@@ -60,12 +65,12 @@ public class SimpleNotification implements Notification {
      */
     private URI resourceUri;
 
-    public String getRecipient() {
-        return recipient;
+    public Collection<String> getRecipients() {
+        return recipients;
     }
 
-    public void setRecipient(String recipient) {
-        this.recipient = recipient;
+    public void setRecipient(Collection<String> recipients) {
+        this.recipients = recipients;
     }
 
     public Collection<String> getCc() {
@@ -84,11 +89,11 @@ public class SimpleNotification implements Notification {
         this.type = type;
     }
 
-    public Map<String, ?> getParameters() {
+    public Map<Param, String> getParameters() {
         return parameters;
     }
 
-    public void setParameters(Map<String, ?> parameters) {
+    public void setParameters(Map<Param, String> parameters) {
         this.parameters = parameters;
     }
 
@@ -108,12 +113,23 @@ public class SimpleNotification implements Notification {
         this.resourceUri = resourceUri;
     }
 
+    public String getSender() {
+        return sender;
+    }
+
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         SimpleNotification that = (SimpleNotification) o;
-        return Objects.equals(recipient, that.recipient) &&
+        return Objects.equals(recipients, that.recipients) &&
+                Objects.equals(sender, that.sender) &&
                 Objects.equals(cc, that.cc) &&
                 type == that.type &&
                 Objects.equals(parameters, that.parameters) &&
@@ -123,13 +139,14 @@ public class SimpleNotification implements Notification {
 
     @Override
     public int hashCode() {
-        return Objects.hash(recipient, cc, type, parameters, eventUri, resourceUri);
+        return Objects.hash(recipients, sender, cc, type, parameters, eventUri, resourceUri);
     }
 
     @Override
     public String toString() {
         return "SimpleNotification{" +
-                "recipient='" + recipient + '\'' +
+                "recipients=" + recipients +
+                ", sender='" + sender + '\'' +
                 ", cc=" + cc +
                 ", type=" + type +
                 ", parameters=" + parameters +
@@ -137,4 +154,5 @@ public class SimpleNotification implements Notification {
                 ", resourceUri=" + resourceUri +
                 '}';
     }
+
 }

@@ -20,8 +20,13 @@ package org.dataconservancy.pass.notification.app.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.notification.impl.NotificationService;
+import org.dataconservancy.pass.notification.model.config.Mode;
+import org.dataconservancy.pass.notification.model.config.NotificationConfig;
 import org.dataconservancy.pass.support.messaging.constants.Constants;
 import org.dataconservancy.pass.support.messaging.json.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -40,11 +45,19 @@ import javax.jms.Session;
 @EnableJms
 public class JmsConfig {
 
+    private static final Logger LOG = LoggerFactory.getLogger(JmsConfig.class);
+
     @Autowired
     private JsonParser jsonParser;
 
     @Autowired
     private PassClient passClient;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private NotificationConfig config;
 
     @Bean
     public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(@Value("${spring.jms.listener.concurrency}")
@@ -71,21 +84,33 @@ public class JmsConfig {
                                          Message<String> message,
                                          javax.jms.Message jmsMessage) {
 
-        // TODO: implement
+        if (Mode.DISABLED == config.getMode()) {
+            try {
+                jmsMessage.acknowledge();
+            } catch (JMSException e) {
+                LOG.warn("Error acknowledging JMS message {}: {}", id, e.getMessage(), e);
+            }
+            return;
+        }
 
         if (!resourceType.equals(Constants.PassType.SUBMISSION_EVENT_RESOURCE) ||
                 !eventType.equals(Constants.JmsFcrepoEvent.RESOURCE_CREATION)) {
             try {
                 jmsMessage.acknowledge();
             } catch (JMSException e) {
-                // ignore
+                LOG.warn("Error acknowledging JMS message {}: {}", id, e.getMessage(), e);
             }
             return;
         }
 
         String eventUri = jsonParser.parseId(message.getPayload().getBytes());
+        notificationService.notify(eventUri);
 
-
+        try {
+            jmsMessage.acknowledge();
+        } catch (JMSException e) {
+            LOG.warn("Error acknowledging JMS message {}: {}", id, e.getMessage(), e);
+        }
 
     }
 

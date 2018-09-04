@@ -90,6 +90,12 @@
         <artifactId>pass-client-api</artifactId>
       </dependency>
 
+      <dependency>
+        <groupId>org.dataconservancy.pass.notify</groupId>
+        <artifactId>notification-impl</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+
     </dependencies>
 
 </project>

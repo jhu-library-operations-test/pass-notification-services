@@ -58,6 +58,8 @@ public class RecipientConfig {
      */
     private Collection<String> whitelist;
 
+    private String fromAddress;
+
     public Mode getMode() {
         return mode;
     }
@@ -82,19 +84,30 @@ public class RecipientConfig {
         this.whitelist = whitelist;
     }
 
+    public String getFromAddress() {
+        return fromAddress;
+    }
+
+    public void setFromAddress(String fromAddress) {
+        this.fromAddress = fromAddress;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         RecipientConfig that = (RecipientConfig) o;
         return mode == that.mode &&
                 Objects.equals(globalCc, that.globalCc) &&
-                Objects.equals(whitelist, that.whitelist);
+                Objects.equals(whitelist, that.whitelist) &&
+                Objects.equals(fromAddress, that.fromAddress);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mode, globalCc, whitelist);
+        return Objects.hash(mode, globalCc, whitelist, fromAddress);
     }
 
     @Override
@@ -103,6 +116,7 @@ public class RecipientConfig {
                 "mode=" + mode +
                 ", globalCc=" + globalCc +
                 ", whitelist=" + whitelist +
+                ", fromAddress='" + fromAddress + '\'' +
                 '}';
     }
 }

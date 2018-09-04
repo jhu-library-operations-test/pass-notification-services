@@ -28,4 +28,20 @@
     <artifactId>dispatch-impl</artifactId>
     <name>Notification Dispatch Implementation</name>
 
+    <dependencies>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass.notify</groupId>
+            <artifactId>dispatch-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass.notify</groupId>
+            <artifactId>notification-model</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+    </dependencies>
+
 </project>
