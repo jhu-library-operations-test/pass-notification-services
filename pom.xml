@@ -91,6 +91,7 @@
         <pass-client.version>0.3.4-SNAPSHOT</pass-client.version>
         <fast-classpath-scanner.version>3.1.5</fast-classpath-scanner.version>
         <jackson.version>2.9.6</jackson.version>
+        <messaging-support.verison>0.0.1-2.3-SNAPSHOT</messaging-support.verison>
 
         <docker.fcrepo.version>oapass/fcrepo:4.7.5-2.3-SNAPSHOT</docker.fcrepo.version>
         <docker.indexer.version>oapass/indexer:0.0.13-2.3-SNAPSHOT</docker.indexer.version>
@@ -211,6 +212,18 @@
     <dependencyManagement>
 
         <dependencies>
+
+            <dependency>
+                <groupId>org.dataconservancy.pass.support.messaging</groupId>
+                <artifactId>constants</artifactId>
+                <version>${messaging-support.verison}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.dataconservancy.pass.support.messaging</groupId>
+                <artifactId>json</artifactId>
+                <version>${messaging-support.verison}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
