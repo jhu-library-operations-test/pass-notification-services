@@ -15,32 +15,53 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.model.User;
 import org.dataconservancy.pass.notification.dispatch.DispatchService;
 import org.dataconservancy.pass.notification.model.Notification;
+import org.dataconservancy.pass.notification.model.config.NotificationConfig;
 
-import java.util.Map;
+import java.net.URI;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class EmailDispatchImpl implements DispatchService {
 
+    private NotificationConfig notificationConfig;
+
+    private PassClient passClient;
+
+
+
     @Override
     public void dispatch(Notification notification) {
 
-        //                URI mailto = submission.getUser();
-        //                if (mailto == null || !mailto.getScheme().equalsIgnoreCase("mailto")) {
-        //                    throw new RuntimeException("Expected mailto URI as the Submission.submitter for event type " +
-        //                            event.getEventType());
-        //                }
-        //                String to = mailto.getSchemeSpecificPart();
-        //                int i;
-        //                if ((i = to.indexOf('?')) > -1) {
-        //                    to = to.substring(0, i);
-        //                }
-        //
-        //                if (isWhitelisted(to, recipientConfig.getWhitelist())) {
-        //                    notification.setRecipient(to);
-        //                }
+        String emailToAddress = String.join(",", parseRecipientUris(notification.getRecipients()
+                .stream().map(URI::create).collect(Collectors.toSet()), passClient));
+
+        // template for subject, body, footer
+        // perform pararmeterization on all templates
+        // compose email
+        // send email
+
+    }
+
+    static Collection<String> parseRecipientUris(Collection<URI> recipientUris, PassClient passClient) {
+        return recipientUris.stream().map(recipientUri -> {
+            if (recipientUri.getScheme().equalsIgnoreCase("mailto")) {
+                String to = recipientUri.getSchemeSpecificPart();
+                int i;
+                if ((i = to.indexOf('?')) > -1) {
+                    to = to.substring(0, i);
+                }
+                return to;
+            }
+
+            User u = passClient.readResource(recipientUri, User.class);
+            return u.getEmail();
+        }).collect(Collectors.toSet());
     }
 }
