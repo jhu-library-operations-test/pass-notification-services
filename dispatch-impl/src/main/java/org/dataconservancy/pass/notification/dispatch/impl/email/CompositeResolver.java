@@ -37,15 +37,24 @@ public class CompositeResolver implements TemplateResolver {
 
     private List<TemplateResolver> resolvers;
 
+    private final List<Exception> exceptionHolder;
+
     public CompositeResolver(List<TemplateResolver> resolvers) {
         Objects.requireNonNull(resolvers, "Template resolvers must not be null");
         this.resolvers = resolvers;
+        exceptionHolder = new ArrayList<>(2);
+    }
+
+    public CompositeResolver(List<TemplateResolver> resolvers, List<Exception> exceptionHolder) {
+        Objects.requireNonNull(resolvers, "Template resolvers must not be null");
+        Objects.requireNonNull(exceptionHolder, "Exception Holder must not be null");
+        this.resolvers = resolvers;
+        this.exceptionHolder = exceptionHolder;
     }
 
     @Override
     public InputStream resolve(TemplatePrototype.Name name, String template) {
         InputStream in = null;
-        List<Exception> loggedEx = new ArrayList<>(2);
         for (TemplateResolver resolver : resolvers) {
             try {
                 in = resolver.resolve(name, template);
@@ -54,14 +63,14 @@ public class CompositeResolver implements TemplateResolver {
                 }
             } catch (Exception e) {
                 LOG.debug("Unable to resolve template '{}' {}: ", name, e.getMessage(), e);
-                loggedEx.add(e);
+                exceptionHolder.add(e);
             }
         }
 
         StringBuilder msg = new StringBuilder("Unable to resolve template name '" + name + "', '" + template + "':\n");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream ps = new PrintStream(baos)) {
-            loggedEx.forEach(ex -> ex.printStackTrace(ps));
+            exceptionHolder.forEach(ex -> ex.printStackTrace(ps));
         }
 
         msg.append(new String(baos.toByteArray()));

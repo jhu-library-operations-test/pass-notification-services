@@ -16,7 +16,6 @@
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
 import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.model.User;
 import org.dataconservancy.pass.notification.dispatch.DispatchService;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
@@ -27,9 +26,10 @@ import org.simplejavamail.mailer.Mailer;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.dataconservancy.pass.notification.dispatch.impl.email.RecipientParser.parseRecipientUris;
 
 /**
  * Dispatches {@link Notification}s as email messages.  Email templates are configured by {@link TemplatePrototype}s
@@ -113,22 +113,6 @@ public class EmailDispatchImpl implements DispatchService {
         // send email
 
         mailer.sendMail(email);
-
     }
 
-    static Collection<String> parseRecipientUris(Collection<URI> recipientUris, PassClient passClient) {
-        return recipientUris.stream().map(recipientUri -> {
-            if (recipientUri.getScheme().equalsIgnoreCase("mailto")) {
-                String to = recipientUri.getSchemeSpecificPart();
-                int i;
-                if ((i = to.indexOf('?')) > -1) {
-                    to = to.substring(0, i);
-                }
-                return to;
-            }
-
-            User u = passClient.readResource(recipientUri, User.class);
-            return u.getEmail();
-        }).collect(Collectors.toSet());
-    }
 }

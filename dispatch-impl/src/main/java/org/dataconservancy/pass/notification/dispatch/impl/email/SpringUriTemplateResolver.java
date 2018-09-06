@@ -18,6 +18,7 @@ package org.dataconservancy.pass.notification.dispatch.impl.email;
 import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.UrlResource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +44,8 @@ public class SpringUriTemplateResolver implements TemplateResolver {
             }
 
             if (template.startsWith("file:") || template.startsWith("http:") || template.startsWith("https:")) {
-                return new ClassPathResource(template.substring(semiColonIdx + 1)).getInputStream();
+                // TODO handle authenticated endpoints; cf. deposit services for impl
+                return new UrlResource(template).getInputStream();
             }
 
             // assume file

@@ -21,10 +21,21 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 /**
+ * Considers the supplied template to be "inline".
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class InlineTemplateResolver implements TemplateResolver {
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <em>Implementation note:</em> returns the bytes of the supplied string as an {@code InputStream}
+     * </p>
+     * @param name the name of the template, ignored in this implementation
+     * @param template the content of an inline template, simply returned as an {@code InputStream}
+     * @return the supplied {@code template} as an {@code InputStream}
+     */
     @Override
     public InputStream resolve(TemplatePrototype.Name name, String template) {
         return new ByteArrayInputStream(template.getBytes());
