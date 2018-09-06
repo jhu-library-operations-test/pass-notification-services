@@ -27,7 +27,7 @@ import java.util.Objects;
  */
 public class TemplatePrototype {
 
-    enum Name {
+    public enum Name {
 
         SUBJECT("subject"),
         BODY("body"),

@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.notification.impl;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
 import org.dataconservancy.pass.notification.model.Notification;
@@ -73,7 +74,8 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
         }
 
         notification.setResourceUri(submission.getId());
-        params.put(Notification.Param.RESOURCE_METADATA, submission.getMetadata());
+        params.put(Notification.Param.RESOURCE_METADATA,
+                StringEscapeUtils.UNESCAPE_JSON.translate(submission.getMetadata()));
 
         String from = recipientConfig.getFromAddress();
         notification.setSender(from);

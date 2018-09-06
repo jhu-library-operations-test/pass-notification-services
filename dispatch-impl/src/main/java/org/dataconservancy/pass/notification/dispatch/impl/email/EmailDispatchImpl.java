@@ -15,14 +15,18 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import com.github.jknack.handlebars.Handlebars;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.User;
 import org.dataconservancy.pass.notification.dispatch.DispatchService;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
+import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +38,9 @@ public class EmailDispatchImpl implements DispatchService {
 
     private PassClient passClient;
 
+    private TemplateResolver templateResolver;
 
+    private Handlebars handlebars;
 
     @Override
     public void dispatch(Notification notification) {
@@ -42,8 +48,32 @@ public class EmailDispatchImpl implements DispatchService {
         String emailToAddress = String.join(",", parseRecipientUris(notification.getRecipients()
                 .stream().map(URI::create).collect(Collectors.toSet()), passClient));
 
-        // template for subject, body, footer
+        String fromAddress = notification.getSender();
+
+        Notification.Type notificationType = notification.getType();
+
+        // resolve templates for subject, body, footer for type
+
+        TemplatePrototype template = notificationConfig.getTemplates().stream()
+                .filter(candidate -> candidate.getNotificationType() == notificationType)
+                .findAny()
+                .orElseThrow(() ->
+                        new RuntimeException("Missing notification template for mode '" + notificationType + "'"));
+
+        Map<TemplatePrototype.Name, InputStream> templates =
+            template.getBodies()
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> templateResolver.resolve(entry.getValue())));
+
         // perform pararmeterization on all templates
+
+//        Map<TemplatePrototype.Name, String> parameterized =
+//                templates.entrySet()
+//                .stream()
+//
+
+
         // compose email
         // send email
 

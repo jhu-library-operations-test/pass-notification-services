@@ -15,6 +15,9 @@
  */
 package org.dataconservancy.pass.notification.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.commons.text.StringEscapeUtils;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
 import org.dataconservancy.pass.model.SubmissionEvent.EventType;
@@ -26,6 +29,7 @@ import org.dataconservancy.pass.notification.model.config.RecipientConfig;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -281,5 +285,34 @@ public class ComposerTest {
 
         // TODO test event metadata?
         // TODO test links
+    }
+
+    @Test
+    public void jsonMappingOfParams() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        SubmissionEvent event = new SubmissionEvent();
+        URI eventUri = URI.create("uri:" + UUID.randomUUID().toString());
+        event.setEventType(EventType.CANCELLED);
+        event.setId(eventUri);
+
+        System.err.println(METADATA_JSON_BLOB);
+
+        Submission submission = new Submission();
+        URI submissionUri = URI.create("uri:" + UUID.randomUUID().toString());
+        String preparersUri = "http://pass.jhu.edu/fcrepo/users/abc123";
+        String submitterUri = "http://pass.jhu.edu/fcrepo/users/xyz789";
+        submission.setMetadata(METADATA_JSON_BLOB);
+        submission.setId(submissionUri);
+        submission.setPreparers(singletonList(URI.create(preparersUri)));
+        submission.setSubmitter(URI.create(submitterUri));
+        event.setPerformedBy(URI.create(submitterUri));
+
+        System.err.println(submission.getMetadata());
+
+        Notification notification = underTest.apply(submission, event);
+
+        mapper.writer().withFeatures(SerializationFeature.INDENT_OUTPUT).writeValue(System.err, notification.getParameters());
+
+
     }
 }
