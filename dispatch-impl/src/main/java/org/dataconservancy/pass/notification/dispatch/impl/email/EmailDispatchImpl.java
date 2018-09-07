@@ -15,14 +15,22 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.User;
 import org.dataconservancy.pass.notification.dispatch.DispatchService;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
 import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype;
+import org.simplejavamail.email.Email;
+import org.simplejavamail.email.EmailBuilder;
+import org.simplejavamail.mailer.Mailer;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
@@ -40,19 +48,29 @@ public class EmailDispatchImpl implements DispatchService {
 
     private TemplateResolver templateResolver;
 
+    private ObjectMapper mapper;
+
     private Handlebars handlebars;
+
+    private Mailer mailer;
+
+    public EmailDispatchImpl(NotificationConfig notificationConfig, PassClient passClient,
+                             TemplateResolver templateResolver, ObjectMapper mapper, Handlebars handlebars,
+                             Mailer mailer) {
+        this.notificationConfig = notificationConfig;
+        this.passClient = passClient;
+        this.templateResolver = templateResolver;
+        this.mapper = mapper;
+        this.handlebars = handlebars;
+        this.mailer = mailer;
+    }
 
     @Override
     public void dispatch(Notification notification) {
 
-        String emailToAddress = String.join(",", parseRecipientUris(notification.getRecipients()
-                .stream().map(URI::create).collect(Collectors.toSet()), passClient));
-
-        String fromAddress = notification.getSender();
-
         Notification.Type notificationType = notification.getType();
 
-        // resolve templates for subject, body, footer for type
+        // resolve templates for subject, body, footer based on notification type
 
         TemplatePrototype template = notificationConfig.getTemplates().stream()
                 .filter(candidate -> candidate.getNotificationType() == notificationType)
@@ -61,21 +79,48 @@ public class EmailDispatchImpl implements DispatchService {
                         new RuntimeException("Missing notification template for mode '" + notificationType + "'"));
 
         Map<TemplatePrototype.Name, InputStream> templates =
-            template.getBodies()
+            template.getRefs()
                     .entrySet()
                     .stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> templateResolver.resolve(entry.getValue())));
+                    .collect(Collectors.toMap(Map.Entry::getKey,
+                            entry -> templateResolver.resolve(entry.getKey(), entry.getValue())));
 
         // perform pararmeterization on all templates
 
-//        Map<TemplatePrototype.Name, String> parameterized =
-//                templates.entrySet()
-//                .stream()
-//
-
+        Map<TemplatePrototype.Name, String> parameterized =
+                templates.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> {
+                            InputStream in = entry.getValue();
+                            try {
+                                Map<Notification.Param, String> paramMap = notification.getParameters();
+                                String model = StringEscapeUtils.unescapeJson(mapper.writeValueAsString(paramMap));
+                                Template t = handlebars.compileInline(IOUtils.toString(in, "UTF-8"));
+                                return t.apply(model);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e.getMessage(), e);
+                            }
+                        }));
 
         // compose email
+
+        String emailToAddress = String.join(",", parseRecipientUris(notification.getRecipients()
+                .stream().map(URI::create).collect(Collectors.toSet()), passClient));
+
+        Email email = EmailBuilder.startingBlank()
+                .from(notification.getSender())
+                .to(emailToAddress)
+                .cc(String.join(",", notification.getCc()))
+                .withSubject(parameterized.getOrDefault(TemplatePrototype.Name.SUBJECT, ""))
+                .withPlainText(String.join("\n\n",
+                        parameterized.getOrDefault(TemplatePrototype.Name.BODY, ""),
+                        parameterized.getOrDefault(TemplatePrototype.Name.FOOTER, "")))
+                .buildEmail();
+
         // send email
+
+        mailer.sendMail(email);
 
     }
 

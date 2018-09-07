@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 
@@ -30,7 +31,7 @@ import static java.lang.String.format;
 public class SpringUriTemplateResolver implements TemplateResolver {
 
     @Override
-    public InputStream resolve(String template) {
+    public InputStream resolve(TemplatePrototype.Name name, String template) {
 
         URI.create(template);
 
@@ -49,7 +50,8 @@ public class SpringUriTemplateResolver implements TemplateResolver {
 
             return new FileSystemResource(template).getInputStream();
         } catch (IOException e) {
-            String msg = format("Error resolving template '%s' as a Spring Resource: %s", template, e.getMessage());
+            String msg = format("Error resolving template name '%s', '%s' as a Spring Resource: %s",
+                    name, template, e.getMessage());
             throw new RuntimeException(msg, e);
         }
 

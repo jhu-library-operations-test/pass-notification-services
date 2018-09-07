@@ -15,6 +15,8 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype;
+
 import java.io.InputStream;
 
 /**
@@ -28,9 +30,10 @@ public interface TemplateResolver {
      * template.  If the former, the URI is resolved to the template content, if the latter, an InputStream is returned
      * over the inline content.
      *
+     * @param name the name of the template
      * @param template a URI for the template location, or the content of an inline template
      * @return the content of the template
      */
-    InputStream resolve(String template);
+    InputStream resolve(TemplatePrototype.Name name, String template);
 
 }

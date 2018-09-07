@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,20 +41,20 @@ public class CompositeResolver implements TemplateResolver {
     }
 
     @Override
-    public InputStream resolve(String template) {
+    public InputStream resolve(TemplatePrototype.Name name, String template) {
         InputStream in = null;
         List<Exception> loggedEx = new ArrayList<>(2);
         for (TemplateResolver resolver : resolvers) {
             try {
-                in = resolver.resolve(template);
+                in = resolver.resolve(name, template);
             } catch (Exception e) {
-                LOG.debug("Unable to resolve template {}: " + e.getMessage(), e);
+                LOG.debug("Unable to resolve template '{}' {}: ", name, e.getMessage(), e);
                 loggedEx.add(e);
             }
         }
 
         if (in == null) {
-            StringBuilder msg = new StringBuilder("Unable to resolve template '" + template + "':\n");
+            StringBuilder msg = new StringBuilder("Unable to resolve template name '" + name + "', '" + template + "':\n");
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (PrintStream ps = new PrintStream(baos)) {
                 loggedEx.forEach(ex -> ex.printStackTrace(ps));

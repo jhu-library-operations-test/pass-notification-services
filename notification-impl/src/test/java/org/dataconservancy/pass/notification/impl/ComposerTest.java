@@ -17,6 +17,7 @@ package org.dataconservancy.pass.notification.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.text.StringEscapeUtils;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
@@ -295,8 +296,6 @@ public class ComposerTest {
         event.setEventType(EventType.CANCELLED);
         event.setId(eventUri);
 
-        System.err.println(METADATA_JSON_BLOB);
-
         Submission submission = new Submission();
         URI submissionUri = URI.create("uri:" + UUID.randomUUID().toString());
         String preparersUri = "http://pass.jhu.edu/fcrepo/users/abc123";
@@ -307,11 +306,16 @@ public class ComposerTest {
         submission.setSubmitter(URI.create(submitterUri));
         event.setPerformedBy(URI.create(submitterUri));
 
-        System.err.println(submission.getMetadata());
-
         Notification notification = underTest.apply(submission, event);
 
-        mapper.writer().withFeatures(SerializationFeature.INDENT_OUTPUT).writeValue(System.err, notification.getParameters());
+        System.err.println(notification.getParameters().get(Param.RESOURCE_METADATA));
+
+        notification.getParameters().put(Param.SUBJECT, "Don\'t try \"this\" at home!");
+
+        String escapedOut = StringEscapeUtils.unescapeJson(
+                mapper.writerWithDefaultPrettyPrinter().writeValueAsString(notification.getParameters()));
+
+        System.err.println(escapedOut);
 
 
     }

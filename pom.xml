@@ -94,6 +94,7 @@
         <jackson.version>2.9.6</jackson.version>
         <messaging-support.verison>0.0.1-2.3-SNAPSHOT</messaging-support.verison>
         <handlebars.version>4.1.0</handlebars.version>
+        <simple-javamail.version>5.0.3</simple-javamail.version>
 
         <docker.fcrepo.version>oapass/fcrepo:4.7.5-2.3-SNAPSHOT</docker.fcrepo.version>
         <docker.indexer.version>oapass/indexer:0.0.13-2.3-SNAPSHOT</docker.indexer.version>
@@ -214,6 +215,12 @@
     <dependencyManagement>
 
         <dependencies>
+
+            <dependency>
+                <groupId>org.simplejavamail</groupId>
+                <artifactId>simple-java-mail</artifactId>
+                <version>${simple-javamail.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.github.jknack</groupId>
