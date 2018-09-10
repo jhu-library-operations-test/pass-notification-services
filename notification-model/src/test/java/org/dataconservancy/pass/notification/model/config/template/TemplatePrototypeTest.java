@@ -34,7 +34,7 @@ public class TemplatePrototypeTest extends AbstractJacksonMappingTest {
     private final String TEMPLATE_JSON = "" +
             "{\n" +
             "        \"notification\": \"SUBMISSION_APPROVAL_INVITE\",\n" +
-            "        \"bodies\": {\n" +
+            "        \"refs\": {\n" +
             "          \"SUBJECT\": \"PASS Submission Approval: ${RESOURCE_METADATA.title}\",\n" +
             "          \"BODY\": \"classpath*:pass-body-submission-approval-invite-template.vm\",\n" +
             "          \"FOOTER\": \"classpath*:pass-footer-template.vm\"\n" +
