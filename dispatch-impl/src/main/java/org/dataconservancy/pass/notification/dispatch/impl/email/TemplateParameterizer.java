@@ -22,10 +22,21 @@ import java.io.InputStream;
 import java.util.Map;
 
 /**
+ * Parameterizes a named template containing placeholders, using a {@code Map} of key-value pairs.  Supported
+ * placeholders are documented in {@link Notification.Param}.
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public interface TemplateParameterizer {
 
+    /**
+     * Performs parameterization of the named template, using the supplied parameters.
+     *
+     * @param templateName the name of {@code template}
+     * @param paramMap contains placeholder values keyed by {@code Notification.Param}
+     * @param template the template being parameterized
+     * @return the processed template, with placeholders replaced by values from {@code paramMap}
+     */
     String parameterize(TemplatePrototype.Name templateName, Map<Notification.Param, String> paramMap,
                         InputStream template);
 

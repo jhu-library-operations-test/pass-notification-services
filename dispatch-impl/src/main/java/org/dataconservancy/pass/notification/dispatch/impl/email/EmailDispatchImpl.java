@@ -15,9 +15,6 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import com.github.jknack.handlebars.Template;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.User;
 import org.dataconservancy.pass.notification.dispatch.DispatchService;
@@ -28,7 +25,6 @@ import org.simplejavamail.email.Email;
 import org.simplejavamail.email.EmailBuilder;
 import org.simplejavamail.mailer.Mailer;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collection;
@@ -36,7 +32,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Dispatches {@link Notification}s as email messages.  Email templates are configured by {@link TemplatePrototype}s
+ * obtained from the {@link NotificationConfig}, and processed using a {@link TemplateParameterizer}.
+ * <p>
+ * This implementation expects notification recipients to be encoded as URIs.  Email addresses can be encoded
+ * as {@code mailto} URIs, and PASS {@code User} resources encoded as Fedora repository URIs.  {@code mailto}
+ * URIs will be parsed for an email address and optionally a name enclosed with &lt; and &gt;.  PASS {@code User} URIs
+ * will be de-referenced and the {@code "email"} property used as the recipient email address.
+ * </p>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
+ * @see <a href="https://tools.ietf.org/html/rfc6068">RFC 6068</a>
  */
 public class EmailDispatchImpl implements DispatchService {
 
