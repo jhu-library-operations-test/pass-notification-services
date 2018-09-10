@@ -20,6 +20,7 @@ package org.dataconservancy.pass.notification.dispatch.impl.email;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.helper.ConditionalHelpers;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.Notification.Param;
 import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype.Name;
@@ -31,41 +32,41 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertTrue;
+
 public class HandlebarsParameterizerTest {
 
     private static final String BODY_TEMPLATE = "" +
             "Dear {{to}},\n" +
             "\n" +
-            "A submission titled \"{{#resource_metadata}}{{title}}{{/resource_metadata}}\" been prepared on your behalf by {{from}} {{#event_metadata}}\n" +
-            "        {{#if comment}}\n" +
-            "            with comment \"{{comment}}\"\n" +
-            "        {{else}}\n" +
-            "            .\n" +
-            "        {{/if}}{{/event_metadata}}\n" +
+            "A submission titled \"{{#resource_metadata}}{{title}}{{/resource_metadata}}\" been prepared on your behalf by {{from}} {{#event_metadata}}{{#if comment}}with comment \"{{comment}}\"{{else}}.{{/if}}{{/event_metadata}}\n" +
             "\n" +
             "Please review the submission at the following URL:\n" +
-            "{{#each link_metadata}}\n" +
-            "rel: {{rel}}\n" +
-            "href: {{href}}\n" +
-            "{{/each}}";
+            "{{#each link_metadata}}{{#eq rel \"submissionReview\"}}{{href}}{{else}}{{/eq}}{{/each}}";
 
     private static final String SUBJECT_TEMPLATE = "PASS Submission titled \"{{#resource_metadata}}{{title}}{{/resource_metadata}}\" awaiting your approval";
 
+    private static final String COMMENT_STRING = "How does this look?";
+
     private static final String EVENT_METADATA = "" +
             "{\n" +
-            "  \"comment\": \"How does this look?\"\n" +
+            "  \"comment\": \"" + COMMENT_STRING + "\"\n" +
             "}";
+
+    private static final String ARTICLE_TITLE = "Article title";
 
     private static final String RESOURCE_METADATA = "" +
             "{\n" +
-            "  \"title\": \"Article title\"\n" +
+            "  \"title\": \"" + ARTICLE_TITLE + "\"\n" +
             "}";
+
+    private static final String SUBMISSION_REVIEW_LINK = "https://pass.jhu.edu/app/submission/abc123";
 
     private static final String LINK_METADATA = "" +
             "[\n" +
             "  {\n" +
             "    \"rel\": \"submissionReview\",\n" +
-            "    \"href\": \"https://pass.jhu.edu/app/submission/abc123\"\n" +
+            "    \"href\": \"" + SUBMISSION_REVIEW_LINK + "\"\n" +
             "  }\n" +
             "]";
 
@@ -87,14 +88,19 @@ public class HandlebarsParameterizerTest {
         paramMap.put(Param.RESOURCE_METADATA, RESOURCE_METADATA);
         paramMap.put(Param.EVENT_METADATA, EVENT_METADATA);
         paramMap.put(Param.LINKS, LINK_METADATA);
-        underTest = new HandlebarsParameterizer(new Handlebars(), mapper);
+        Handlebars handlebars = new Handlebars();
+        handlebars.registerHelper("eq", ConditionalHelpers.eq);
+        underTest = new HandlebarsParameterizer(handlebars, mapper);
     }
 
     @Test
     public void simpleParameterization() throws IOException {
-
         String parameterized = underTest.parameterize(Name.BODY, paramMap, new ByteArrayInputStream(BODY_TEMPLATE.getBytes()));
 
-        System.out.println("Output:\n" + parameterized);
+        assertTrue(parameterized.contains(TO));
+        assertTrue(parameterized.contains(FROM));
+        assertTrue(parameterized.contains(COMMENT_STRING));
+        assertTrue(parameterized.contains(SUBMISSION_REVIEW_LINK));
+        assertTrue(parameterized.contains(ARTICLE_TITLE));
     }
 }
