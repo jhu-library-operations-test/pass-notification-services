@@ -19,31 +19,67 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class HandlebarsParameterizer implements TemplateParameterizer {
 
-    private ObjectMapper mapper;
+    private static final Logger LOG = LoggerFactory.getLogger(HandlebarsParameterizer.class);
 
     private Handlebars handlebars;
+
+    private ObjectMapper mapper;
+
+    public HandlebarsParameterizer(Handlebars handlebars, ObjectMapper mapper) {
+        this.handlebars = handlebars;
+        this.mapper = mapper;
+    }
 
     @Override
     public String parameterize(TemplatePrototype.Name templateName, Map<Notification.Param, String> paramMap,
                                InputStream template) {
+
+        Map<String, Object> mustacheModel = paramMap
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(entry -> entry.getKey().paramName(),
+                        entry -> {
+                            Notification.Param param = entry.getKey();
+                            switch (param) {
+                                case EVENT_METADATA:
+                                case RESOURCE_METADATA:
+                                    try {
+                                        return mapper.readValue(entry.getValue(), Map.class);
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e.getMessage(), e);
+                                    }
+                                case LINKS:
+                                    try {
+                                        return mapper.readValue(entry.getValue(), List.class);
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e.getMessage(), e);
+                                    }
+                            }
+
+                            return entry.getValue();
+                        }));
+
         String parameterizedTemplate = null;
         try {
-            String model = StringEscapeUtils.unescapeJson(mapper.writeValueAsString(paramMap));
-            Template t = handlebars.compileInline(IOUtils.toString(template, "UTF-8"));
-            parameterizedTemplate = t.apply(model);
+            String templateString = IOUtils.toString(template, "UTF-8");
+            Template t = handlebars.compileInline(templateString);
+            parameterizedTemplate = t.apply(mustacheModel);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
