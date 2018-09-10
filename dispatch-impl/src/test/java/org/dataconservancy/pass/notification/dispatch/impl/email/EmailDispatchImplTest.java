@@ -15,9 +15,6 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.User;
@@ -38,7 +35,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -60,13 +56,7 @@ public class EmailDispatchImplTest {
 
     private TemplateResolver templateResolver;
 
-    private Template template;
-
-    private Handlebars handlebars;
-
-    private ObjectMapper mapper = new ObjectMapper();
-
-    private Map<Name, String> templateRefs;
+    private TemplateParameterizer templateParameterizer;
 
     private Mailer mailer;
 
@@ -101,11 +91,10 @@ public class EmailDispatchImplTest {
         config = mock(NotificationConfig.class);
         templateProto = mock(TemplatePrototype.class);
         templateResolver = mock(TemplateResolver.class);
-        template = mock(Template.class);
-        handlebars = mock(Handlebars.class);
         passClient = mock(PassClient.class);
         user = mock(User.class);
         mailer = mock(Mailer.class);
+        templateParameterizer = mock(TemplateParameterizer.class);
 
         when(config.getTemplates()).thenReturn(Collections.singletonList(templateProto));
         when(templateProto.getRefs()).thenReturn(new HashMap<Name, String> () {
@@ -119,7 +108,7 @@ public class EmailDispatchImplTest {
         when(user.getEmail()).thenReturn(userEmail);
         when(passClient.readResource(URI.create(userUri), User.class)).thenReturn(user);
 
-        underTest = new EmailDispatchImpl(config, passClient, templateResolver, mapper, handlebars, mailer);
+        underTest = new EmailDispatchImpl(config, passClient, templateResolver, templateParameterizer, mailer);
     }
 
     @Test
@@ -142,8 +131,19 @@ public class EmailDispatchImplTest {
         when(templateResolver.resolve(any(), any())).thenAnswer(inv ->
                 IOUtils.toInputStream(inv.getArgument(1), "UTF-8"));
 
-        when(handlebars.compileInline(any())).thenReturn(template);
-        when(template.apply(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(templateParameterizer.parameterize(any(), any(), any())).thenAnswer(inv -> {
+            TemplatePrototype.Name name = inv.getArgument(0);
+            switch (name) {
+                case SUBJECT:
+                    return "A Subject";
+                case FOOTER:
+                    return "A Footer";
+                case BODY:
+                    return "A Body";
+            }
+
+            throw new RuntimeException("Unknown template name '" + name + "'");
+        });
 
         underTest.dispatch(notification);
 

@@ -15,8 +15,6 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -48,20 +46,17 @@ public class EmailDispatchImpl implements DispatchService {
 
     private TemplateResolver templateResolver;
 
-    private ObjectMapper mapper;
-
-    private Handlebars handlebars;
+    private TemplateParameterizer parameterizer;
 
     private Mailer mailer;
 
     public EmailDispatchImpl(NotificationConfig notificationConfig, PassClient passClient,
-                             TemplateResolver templateResolver, ObjectMapper mapper, Handlebars handlebars,
-                             Mailer mailer) {
+                             TemplateResolver templateResolver,
+                             TemplateParameterizer parameterizer, Mailer mailer) {
         this.notificationConfig = notificationConfig;
         this.passClient = passClient;
         this.templateResolver = templateResolver;
-        this.mapper = mapper;
-        this.handlebars = handlebars;
+        this.parameterizer = parameterizer;
         this.mailer = mailer;
     }
 
@@ -91,17 +86,8 @@ public class EmailDispatchImpl implements DispatchService {
                 templates.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> {
-                            InputStream in = entry.getValue();
-                            try {
-                                Map<Notification.Param, String> paramMap = notification.getParameters();
-                                String model = StringEscapeUtils.unescapeJson(mapper.writeValueAsString(paramMap));
-                                Template t = handlebars.compileInline(IOUtils.toString(in, "UTF-8"));
-                                return t.apply(model);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e.getMessage(), e);
-                            }
-                        }));
+                        entry -> parameterizer.parameterize(
+                                entry.getKey(), notification.getParameters(), entry.getValue())));
 
         // compose email
 
