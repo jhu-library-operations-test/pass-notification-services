@@ -35,7 +35,22 @@ import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
 
 /**
+ * Composes a {@link Notification} from a {@link SubmissionEvent} and its corresponding {@link Submission}, according
+ * to a {@link RecipientConfig}.  Responsible for determining the type of notification, and who the recipients and
+ * sender of the notification are.  It is also responsible for populating other parameters of the notification such as
+ * resource metadata, link metadata, or event metadata.
+ * <p>
+ * The implementation applies a whitelist to the recipients of the notification according to the recipient
+ * configuration.  If the recipient configuration has a null or empty whitelist, that means that *all* recipients are
+ * whitelisted (each recipient will receive the notification).  If the recipient configuration has a non-empty
+ * whitelist, then only those users specified in the whitelist will receive a notification.  (N.B. the global CC field
+ * of the recipient configuration is not run through the whitelist).
+ * </p>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
+ * @see RecipientConfig
+ * @see Notification.Type
+ * @see Notification.Param
  */
 public class Composer implements BiFunction<Submission, SubmissionEvent, Notification> {
 
@@ -57,8 +72,24 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
                         new RuntimeException("Missing recipient configuration for Mode '" + config.getMode() + "'"));
     }
 
+    /**
+     * Composes a {@code Notification} from a {@code Submission} and {@code SubmissionEvent}.
+     *
+     * @param submission
+     * @param event
+     * @return
+     */
     @Override
     public Notification apply(Submission submission, SubmissionEvent event) {
+        Objects.requireNonNull(submission, "Submission must not be null.");
+        Objects.requireNonNull(event, "Event must not be null.");
+
+        if (!event.getSubmission().equals(submission.getId())) {
+            // TODO: exception?
+            LOG.warn("Composing a Notification for tuple [{},{}] but {} references a different Submission: {}.",
+                    submission.getId(), event.getId(), event.getId(), event.getSubmission());
+        }
+
         SimpleNotification notification = new SimpleNotification();
         HashMap<Notification.Param, String> params = new HashMap<>();
         notification.setParameters(params);

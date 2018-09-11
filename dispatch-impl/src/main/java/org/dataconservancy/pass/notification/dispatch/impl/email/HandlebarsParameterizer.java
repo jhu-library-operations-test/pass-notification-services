@@ -31,6 +31,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * Parameterizes Mustache templates using Handlebars.
+ * <p>
+ * <em>Implementation note:</em> performance could be improved by pre-compiling templates.
+ * </p>
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class HandlebarsParameterizer implements TemplateParameterizer {

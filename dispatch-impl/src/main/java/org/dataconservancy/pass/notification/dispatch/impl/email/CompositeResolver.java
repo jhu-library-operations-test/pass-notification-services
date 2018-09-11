@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Attempts to resolve a named template using a list of template resolvers.
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class CompositeResolver implements TemplateResolver {
@@ -47,24 +49,23 @@ public class CompositeResolver implements TemplateResolver {
         for (TemplateResolver resolver : resolvers) {
             try {
                 in = resolver.resolve(name, template);
+                if (in != null) {
+                    return in;
+                }
             } catch (Exception e) {
                 LOG.debug("Unable to resolve template '{}' {}: ", name, e.getMessage(), e);
                 loggedEx.add(e);
             }
         }
 
-        if (in == null) {
-            StringBuilder msg = new StringBuilder("Unable to resolve template name '" + name + "', '" + template + "':\n");
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (PrintStream ps = new PrintStream(baos)) {
-                loggedEx.forEach(ex -> ex.printStackTrace(ps));
-            }
-
-            msg.append(new String(baos.toByteArray()));
-
-            throw new RuntimeException(msg.toString());
+        StringBuilder msg = new StringBuilder("Unable to resolve template name '" + name + "', '" + template + "':\n");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (PrintStream ps = new PrintStream(baos)) {
+            loggedEx.forEach(ex -> ex.printStackTrace(ps));
         }
 
-        return in;
+        msg.append(new String(baos.toByteArray()));
+
+        throw new RuntimeException(msg.toString());
     }
 }

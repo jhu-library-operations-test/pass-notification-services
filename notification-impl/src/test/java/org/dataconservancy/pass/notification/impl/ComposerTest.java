@@ -102,6 +102,7 @@ public class ComposerTest {
         submission.setMetadata(METADATA_JSON_BLOB);
         submission.setId(submissionUri);
         submission.setSubmitter(mailtoUri);
+        event.setSubmission(submissionUri);
 
         Notification notification = underTest.apply(submission, event);
 
@@ -135,6 +136,7 @@ public class ComposerTest {
         submission.setMetadata(METADATA_JSON_BLOB);
         submission.setId(submissionUri);
         submission.setSubmitter(mailtoUri);
+        event.setSubmission(submissionUri);
 
         Notification notification = underTest.apply(submission, event);
 
@@ -167,6 +169,7 @@ public class ComposerTest {
         submission.setMetadata(METADATA_JSON_BLOB);
         submission.setId(submissionUri);
         submission.setPreparers(singletonList(URI.create(preparersUri)));
+        event.setSubmission(submissionUri);
 
         Notification notification = underTest.apply(submission, event);
 
@@ -199,6 +202,7 @@ public class ComposerTest {
         submission.setMetadata(METADATA_JSON_BLOB);
         submission.setId(submissionUri);
         submission.setPreparers(singletonList(URI.create(preparersUri)));
+        event.setSubmission(submissionUri);
 
         Notification notification = underTest.apply(submission, event);
 
@@ -234,6 +238,7 @@ public class ComposerTest {
         submission.setPreparers(singletonList(URI.create(preparersUri)));
         submission.setSubmitter(URI.create(submitterUri));
         event.setPerformedBy(URI.create(preparersUri));
+        event.setSubmission(submissionUri);
 
         Notification notification = underTest.apply(submission, event);
 
@@ -269,6 +274,7 @@ public class ComposerTest {
         submission.setPreparers(singletonList(URI.create(preparersUri)));
         submission.setSubmitter(URI.create(submitterUri));
         event.setPerformedBy(URI.create(submitterUri));
+        event.setSubmission(submissionUri);
 
         Notification notification = underTest.apply(submission, event);
 
@@ -305,6 +311,7 @@ public class ComposerTest {
         submission.setPreparers(singletonList(URI.create(preparersUri)));
         submission.setSubmitter(URI.create(submitterUri));
         event.setPerformedBy(URI.create(submitterUri));
+        event.setSubmission(submissionUri);
 
         Notification notification = underTest.apply(submission, event);
 

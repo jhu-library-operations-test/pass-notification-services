@@ -20,15 +20,17 @@ import org.dataconservancy.pass.notification.model.config.template.TemplateProto
 import java.io.InputStream;
 
 /**
+ * Resolves the named template, interpreting the template string as either a locator (i.e. URI) or an inline template.
+ *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 @FunctionalInterface
 public interface TemplateResolver {
 
     /**
-     * Resolve the template.  {@code template} may be a {@code URI}, or the {@code String} itself may be an in-line
-     * template.  If the former, the URI is resolved to the template content, if the latter, an InputStream is returned
-     * over the inline content.
+     * Resolve the named template.  The {@code template} may be a {@code URI} resolving to the location of the template
+     * content, or the {@code String template} itself may be an in-line template.  If the former, the URI is resolved to
+     * the template content, if the latter, an InputStream is returned over the inline content.
      *
      * @param name the name of the template
      * @param template a URI for the template location, or the content of an inline template
