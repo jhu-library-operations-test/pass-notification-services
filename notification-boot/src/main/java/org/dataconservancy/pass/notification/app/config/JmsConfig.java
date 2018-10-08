@@ -18,7 +18,6 @@
 
 package org.dataconservancy.pass.notification.app.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.notification.impl.NotificationService;
 import org.dataconservancy.pass.notification.model.config.Mode;

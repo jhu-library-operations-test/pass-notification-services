@@ -16,6 +16,7 @@
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
 import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.notification.dispatch.DispatchException;
 import org.dataconservancy.pass.notification.dispatch.DispatchService;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
@@ -77,42 +78,48 @@ public class EmailDispatchImpl implements DispatchService {
                 .filter(candidate -> candidate.getNotificationType() == notificationType)
                 .findAny()
                 .orElseThrow(() ->
-                        new RuntimeException("Missing notification template for mode '" + notificationType + "'"));
+                        new DispatchException("Missing notification template for mode '" + notificationType + "'",
+                                notification));
 
-        Map<TemplatePrototype.Name, InputStream> templates =
-            template.getRefs()
-                    .entrySet()
+        try {
+            Map<TemplatePrototype.Name, InputStream> templates =
+                template.getRefs()
+                        .entrySet()
+                        .stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey,
+                                entry -> templateResolver.resolve(entry.getKey(), entry.getValue())));
+
+            // perform pararmeterization on all templates
+
+            Map<TemplatePrototype.Name, String> parameterized =
+                    templates.entrySet()
                     .stream()
                     .collect(Collectors.toMap(Map.Entry::getKey,
-                            entry -> templateResolver.resolve(entry.getKey(), entry.getValue())));
+                            entry -> parameterizer.parameterize(
+                                    entry.getKey(), notification.getParameters(), entry.getValue())));
 
-        // perform pararmeterization on all templates
+            // compose email
 
-        Map<TemplatePrototype.Name, String> parameterized =
-                templates.entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> parameterizer.parameterize(
-                                entry.getKey(), notification.getParameters(), entry.getValue())));
+            String emailToAddress = String.join(",", parseRecipientUris(notification.getRecipients()
+                    .stream().map(URI::create).collect(Collectors.toSet()), passClient));
 
-        // compose email
+            Email email = EmailBuilder.startingBlank()
+                    .from(notification.getSender())
+                    .to(emailToAddress)
+                    .cc(String.join(",", notification.getCc()))
+                    .withSubject(parameterized.getOrDefault(TemplatePrototype.Name.SUBJECT, ""))
+                    .withPlainText(String.join("\n\n",
+                            parameterized.getOrDefault(TemplatePrototype.Name.BODY, ""),
+                            parameterized.getOrDefault(TemplatePrototype.Name.FOOTER, "")))
+                    .buildEmail();
 
-        String emailToAddress = String.join(",", parseRecipientUris(notification.getRecipients()
-                .stream().map(URI::create).collect(Collectors.toSet()), passClient));
+            // send email
 
-        Email email = EmailBuilder.startingBlank()
-                .from(notification.getSender())
-                .to(emailToAddress)
-                .cc(String.join(",", notification.getCc()))
-                .withSubject(parameterized.getOrDefault(TemplatePrototype.Name.SUBJECT, ""))
-                .withPlainText(String.join("\n\n",
-                        parameterized.getOrDefault(TemplatePrototype.Name.BODY, ""),
-                        parameterized.getOrDefault(TemplatePrototype.Name.FOOTER, "")))
-                .buildEmail();
+            mailer.sendMail(email);
+        } catch (Exception e) {
+            throw new DispatchException(e.getMessage(), e, notification);
+        }
 
-        // send email
-
-        mailer.sendMail(email);
     }
 
 }

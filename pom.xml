@@ -31,6 +31,7 @@
       <module>notification-integration</module>
       <module>notification-model</module> 
       <module>notification-boot</module>
+      <module>logging-aop</module>
     </modules>
 
     <profiles>
@@ -95,6 +96,7 @@
         <messaging-support.verison>0.0.1-2.3-SNAPSHOT</messaging-support.verison>
         <handlebars.version>4.1.0</handlebars.version>
         <simple-javamail.version>5.0.3</simple-javamail.version>
+        <aspectjrt.version>1.9.1</aspectjrt.version>
 
         <docker.fcrepo.version>oapass/fcrepo:4.7.5-2.3-SNAPSHOT</docker.fcrepo.version>
         <docker.indexer.version>oapass/indexer:0.0.13-2.3-SNAPSHOT</docker.indexer.version>
@@ -331,6 +333,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aop</artifactId>
+                <version>${spring-framework.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot.version}</version>
@@ -496,6 +504,12 @@
                 <groupId>io.github.lukehutch</groupId>
                 <artifactId>fast-classpath-scanner</artifactId>
                 <version>${fast-classpath-scanner.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjrt</artifactId>
+                <version>${aspectjrt.version}</version>
             </dependency>
 
         </dependencies>
