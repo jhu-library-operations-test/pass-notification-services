@@ -36,6 +36,7 @@ import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.support.JmsHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.util.ErrorHandler;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -63,11 +64,11 @@ public class JmsConfig {
                                                                                   String concurrency,
                                                                           @Value("${spring.jms.listener.auto-startup}")
                                                                                   boolean autoStart,
-                                                                          ConnectionFactory connectionFactory) {
+                                                                          ConnectionFactory connectionFactory,
+                                                                          ErrorHandler errorHandler) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
-        // TODO: JmsListenerContainerFactory ErrorHandler
-        // factory.setErrorHandler(errorHandler);
+        factory.setErrorHandler(errorHandler);
         factory.setConcurrency(concurrency);
         factory.setConnectionFactory(connectionFactory);
         factory.setAutoStartup(autoStart);
