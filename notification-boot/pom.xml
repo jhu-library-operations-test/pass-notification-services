@@ -66,6 +66,11 @@
       </dependency>
 
       <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-aop</artifactId>
+      </dependency>
+
+      <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-jms</artifactId>
       </dependency>
@@ -91,9 +96,39 @@
       </dependency>
 
       <dependency>
+        <groupId>org.dataconservancy.pass</groupId>
+        <artifactId>pass-data-client</artifactId>
+      </dependency>
+
+      <dependency>
         <groupId>org.dataconservancy.pass.notify</groupId>
         <artifactId>notification-impl</artifactId>
         <version>${project.parent.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.dataconservancy.pass.notify</groupId>
+        <artifactId>logging-aop</artifactId>
+        <version>${project.parent.version}</version>
+        <scope>runtime</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.dataconservancy.pass.notify</groupId>
+        <artifactId>dispatch-api</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.dataconservancy.pass.notify</groupId>
+        <artifactId>dispatch-impl</artifactId>
+        <version>${project.parent.version}</version>
+      </dependency>
+
+      <!-- TODO: Remove (used to temporarily mock objects in Spring config) -->
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
       </dependency>
 
     </dependencies>

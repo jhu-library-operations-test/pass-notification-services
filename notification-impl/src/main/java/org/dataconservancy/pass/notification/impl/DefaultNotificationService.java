@@ -20,8 +20,6 @@ import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
 import org.dataconservancy.pass.notification.dispatch.DispatchService;
 import org.dataconservancy.pass.notification.model.Notification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URI;
@@ -30,8 +28,6 @@ import java.net.URI;
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class DefaultNotificationService implements NotificationService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultNotificationService.class);
 
     @Autowired
     private PassClient passClient;

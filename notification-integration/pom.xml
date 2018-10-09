@@ -28,4 +28,94 @@
     <artifactId>notification-integration</artifactId>
     <name>Notification Services Integration</name>
 
+    <properties>
+        <fcrepo.skip>false</fcrepo.skip>
+        <fcrepo.server>localhost</fcrepo.server>
+        <pass.fedora.user>fedoraAdmin</pass.fedora.user>
+        <pass.fedora.password>moo</pass.fedora.password>
+        <pass.fedora.baseurl>http://localhost:8080/fcrepo/rest/</pass.fedora.baseurl>
+        <pass.elasticsearch.host>localhost</pass.elasticsearch.host>
+        <pass.elasticsearch.url>http://${pass.elasticsearch.host}:9200/pass/</pass.elasticsearch.url>
+    </properties>
+
+    <build>
+
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <pass.fedora.user>${pass.fedora.user}</pass.fedora.user>
+                        <pass.fedora.password>${pass.fedora.password}</pass.fedora.password>
+                        <pass.fedora.baseurl>${pass.fedora.baseurl}</pass.fedora.baseurl>
+                        <pass.elasticsearch.url>${pass.elasticsearch.url}</pass.elasticsearch.url>
+                        <fcrepo.host>${fcrepo.server}</fcrepo.host>
+                    </systemProperties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+
+    </build>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass.notify</groupId>
+            <artifactId>logging-aop</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass.notify</groupId>
+            <artifactId>notification-boot</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass.notify</groupId>
+            <artifactId>dispatch-impl</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass.notify</groupId>
+            <artifactId>dispatch-api</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
 </project>
