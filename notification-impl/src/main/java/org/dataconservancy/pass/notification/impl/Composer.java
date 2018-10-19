@@ -39,6 +39,8 @@ import java.util.function.Predicate;
 
 import static java.lang.String.join;
 import static org.dataconservancy.pass.notification.impl.Composer.RecipientConfigFilter.modeFilter;
+import static org.dataconservancy.pass.notification.impl.Links.concat;
+import static org.dataconservancy.pass.notification.impl.Links.serialized;
 
 /**
  * Composes a {@link Notification} from a {@link SubmissionEvent} and its corresponding {@link Submission}, according
@@ -65,6 +67,8 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
     private RecipientConfig recipientConfig;
 
     private RecipientAnalyzer recipientAnalyzer;
+    
+    private SubmissionLinkAnalyzer submissionLinkAnalyzer;
 
     private ObjectMapper mapper;
 
@@ -73,12 +77,14 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
         Objects.requireNonNull(config, "NotificationConfig must not be null.");
         recipientConfig = getRecipientConfig(config);
         recipientAnalyzer = new RecipientAnalyzer(new SimpleWhitelist(recipientConfig));
+        submissionLinkAnalyzer = new SubmissionLinkAnalyzer(new UserTokenGenerator(config));
     }
 
-    public Composer(NotificationConfig config, RecipientAnalyzer recipientAnalyzer, ObjectMapper mapper) {
+    public Composer(NotificationConfig config, RecipientAnalyzer recipientAnalyzer, SubmissionLinkAnalyzer submissionLinkAnalyzer, ObjectMapper mapper) {
         this(config, mapper);
         Objects.requireNonNull(config, "RecipientAnalyzer must not be null.");
         this.recipientAnalyzer = recipientAnalyzer;
+        this.submissionLinkAnalyzer = submissionLinkAnalyzer;
     }
 
     /**
@@ -122,29 +128,28 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
         Collection<String> recipients = recipientAnalyzer.apply(submission, event);
         notification.setRecipient(recipients);
         params.put(Notification.Param.TO, join(",", recipients));
+        
+        params.put(Notification.Param.LINKS, concat(submissionLinkAnalyzer.apply(submission, event))
+                .collect(serialized()));
 
         switch (event.getEventType()) {
             case APPROVAL_REQUESTED_NEWUSER: {
                 notification.setType(Notification.Type.SUBMISSION_APPROVAL_INVITE);
-                // TODO: generate invite link, attach to parameters map
                 break;
             }
 
             case APPROVAL_REQUESTED: {
                 notification.setType(Notification.Type.SUBMISSION_APPROVAL_REQUESTED);
-                // TODO: generate approval requested link, attach to parameters map
                 break;
             }
 
             case CHANGES_REQUESTED: {
                 notification.setType(Notification.Type.SUBMISSION_CHANGES_REQUESTED);
-                // TODO: generate changes requested link, attach to parameters map
                 break;
             }
 
             case SUBMITTED: {
                 notification.setType(Notification.Type.SUBMISSION_SUBMISSION_SUBMITTED);
-                // TODO: generate submission submitted link, attach to parameters map
                 break;
             }
 

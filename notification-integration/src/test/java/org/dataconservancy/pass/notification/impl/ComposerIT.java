@@ -24,6 +24,7 @@ import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
 import org.dataconservancy.pass.notification.app.NotificationApp;
+import org.dataconservancy.pass.notification.model.Link;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.config.Mode;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
@@ -44,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -52,15 +54,19 @@ import static java.lang.String.join;
 import static java.nio.charset.Charset.forName;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.io.IOUtils.resourceToString;
+import static org.dataconservancy.pass.notification.impl.Links.deserialize;
 import static org.dataconservancy.pass.notification.impl.Composer.getRecipientConfig;
+import static org.dataconservancy.pass.notification.model.Link.Rels.SUBMISSION_REVIEW_INVITE;
 import static org.dataconservancy.pass.notification.model.Notification.Param.CC;
 import static org.dataconservancy.pass.notification.model.Notification.Param.EVENT_METADATA;
 import static org.dataconservancy.pass.notification.model.Notification.Param.FROM;
+import static org.dataconservancy.pass.notification.model.Notification.Param.LINKS;
 import static org.dataconservancy.pass.notification.model.Notification.Param.RESOURCE_METADATA;
 import static org.dataconservancy.pass.notification.model.Notification.Param.SUBJECT;
 import static org.dataconservancy.pass.notification.model.Notification.Param.TO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -85,6 +91,8 @@ public class ComposerIT {
     private Submission submission;
 
     private SubmissionEvent submissionEvent;
+    
+    private URI eventLink = URI.create("http://example.org/eventLink");
 
     @Autowired
     private NotificationConfig config;
@@ -109,6 +117,7 @@ public class ComposerIT {
 
         when(submissionEvent.getId()).thenReturn(URI.create(eventId));
         when(submissionEvent.getSubmission()).thenReturn(URI.create(submissionId));
+        when(submissionEvent.getLink()).thenReturn(eventLink);
         when(submission.getId()).thenReturn(URI.create(submissionId));
         when(submission.getPreparers()).thenReturn(preparers.stream().map(URI::create).collect(Collectors.toList()));
         when(submission.getSubmitter()).thenReturn(URI.create(submitter));
@@ -313,6 +322,7 @@ public class ComposerIT {
             event.setId(URI.create(eventId));
             event.setSubmission(URI.create(submissionId));
             event.setPerformedBy(URI.create(submitter));
+            event.setLink(eventLink);
 
             Submission submission = new Submission();
             submission.setId(URI.create(submissionId));
@@ -342,6 +352,7 @@ public class ComposerIT {
         SubmissionEvent event = new SubmissionEvent();
         event.setSubmission(submission.getId());
         event.setEventType(SubmissionEvent.EventType.APPROVAL_REQUESTED_NEWUSER);
+        event.setLink(eventLink);
         event.setPerformedBy(preparerUri);
         event.setComment("Please see if this submission meets your approval.");
         event = passClient.createAndReadResource(event, SubmissionEvent.class);
@@ -360,6 +371,15 @@ public class ComposerIT {
         assertEquals(event.getId().toString(), Composer.field("id", eventMdNode).get());
         // TODO remove Subject?  Unset at this point, since templates haven't been resolved or parameterized
         assertNull(params.get(SUBJECT));
+        
+        String serializedLinks = params.get(LINKS);
+        assertNotNull(serializedLinks);
+        List<Link> deserializedLinks = new ArrayList(deserialize(serializedLinks));
+        assertEquals(1,  deserializedLinks.size());
+        assertEquals(SUBMISSION_REVIEW_INVITE, deserializedLinks.get(0).getRel());
+        assertTrue(deserializedLinks.get(0).getHref().toString().contains(eventLink.toString()));
+        assertNotSame(eventLink, deserializedLinks.get(0).getHref());
+        
     }
 
     private static String packageAsPath() {

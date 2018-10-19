@@ -51,7 +51,7 @@
                 </property>
             </activation>
             <properties>
-                <mail.waitms>60000</mail.waitms>
+                <mail.waitms>120000</mail.waitms>
             </properties>
         </profile>
     </profiles>
