@@ -21,8 +21,8 @@ import org.dataconservancy.pass.model.User;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.Notification.Param;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
-import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype;
-import org.dataconservancy.pass.notification.model.config.template.TemplatePrototype.Name;
+import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
+import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate.Name;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -52,7 +52,7 @@ public class EmailDispatchImplTest {
 
     private NotificationConfig config;
 
-    private TemplatePrototype templateProto;
+    private NotificationTemplate templateProto;
 
     private TemplateResolver templateResolver;
 
@@ -89,7 +89,7 @@ public class EmailDispatchImplTest {
     public void setUp() throws Exception {
         notification = mock(Notification.class);
         config = mock(NotificationConfig.class);
-        templateProto = mock(TemplatePrototype.class);
+        templateProto = mock(NotificationTemplate.class);
         templateResolver = mock(TemplateResolver.class);
         passClient = mock(PassClient.class);
         user = mock(User.class);
@@ -97,7 +97,7 @@ public class EmailDispatchImplTest {
         templateParameterizer = mock(TemplateParameterizer.class);
 
         when(config.getTemplates()).thenReturn(Collections.singletonList(templateProto));
-        when(templateProto.getRefs()).thenReturn(new HashMap<Name, String> () {
+        when(templateProto.getTemplates()).thenReturn(new HashMap<Name, String> () {
             {
                 put(Name.SUBJECT, "A Subject");
                 put(Name.BODY, "A Body");
@@ -108,7 +108,10 @@ public class EmailDispatchImplTest {
         when(user.getEmail()).thenReturn(userEmail);
         when(passClient.readResource(URI.create(userUri), User.class)).thenReturn(user);
 
-        underTest = new EmailDispatchImpl(config, passClient, templateResolver, templateParameterizer, mailer);
+        Parameterizer parameterizer = new Parameterizer(config, templateResolver, templateParameterizer);
+        EmailComposer composer = new EmailComposer(passClient);
+
+        underTest = new EmailDispatchImpl(parameterizer, mailer, composer);
     }
 
     @Test
@@ -132,7 +135,7 @@ public class EmailDispatchImplTest {
                 IOUtils.toInputStream(inv.getArgument(1), "UTF-8"));
 
         when(templateParameterizer.parameterize(any(), any(), any())).thenAnswer(inv -> {
-            TemplatePrototype.Name name = inv.getArgument(0);
+            NotificationTemplate.Name name = inv.getArgument(0);
             switch (name) {
                 case SUBJECT:
                     return "A Subject";

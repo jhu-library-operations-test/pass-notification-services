@@ -16,8 +16,6 @@
 package org.dataconservancy.pass.notification.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.text.StringEscapeUtils;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
@@ -41,7 +39,11 @@ import java.util.function.Function;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,7 +53,7 @@ import static org.mockito.Mockito.when;
  */
 public class ComposerTest {
 
-    private static final String METADATA_JSON_BLOB = "[{\"id\": \"JScholarship\", \"data\": {\"embargo\": \"NON-EXCLUSIVE LICENSE FOR USE OF MATERIALS This non-exclusive license defines the terms for the deposit of Materials in all formats into the digital repository of materials collected, preserved and made available through the Johns Hopkins Digital Repository, JScholarship. The Contributor hereby grants to Johns Hopkins a royalty free, non-exclusive worldwide license to use, re-use, display, distribute, transmit, publish, re-publish or copy the Materials, either digitally or in print, or in any other medium, now or hereafter known, for the purpose of including the Materials hereby licensed in the collection of materials in the Johns Hopkins Digital Repository for educational use worldwide. In some cases, access to content may be restricted according to provisions established in negotiation with the copyright holder. This license shall not authorize the commercial use of the Materials by Johns Hopkins or any other person or organization, but such Materials shall be restricted to non-profit educational use. Persons may apply for commercial use by contacting the copyright holder. Copyright and any other intellectual property right in or to the Materials shall not be transferred by this agreement and shall remain with the Contributor, or the Copyright holder if different from the Contributor. Other than this limited license, the Contributor or Copyright holder retains all rights, title, copyright and other interest in the images licensed. If the submission contains material for which the Contributor does not hold copyright, the Contributor represents that s/he has obtained the permission of the Copyright owner to grant Johns Hopkins the rights required by this license, and that such third-party owned material is clearly identified and acknowledged within the text or content of the submission. If the submission is based upon work that has been sponsored or supported by an agency or organization other than Johns Hopkins, the Contributor represents that s/he has fulfilled any right of review or other obligations required by such contract or agreement. Johns Hopkins will not make any alteration, other than as allowed by this license, to your submission. This agreement embodies the entire agreement of the parties. No modification of this agreement shall be of any effect unless it is made in writing and signed by all of the parties to the agreement.\", \"agreement-to-deposit\": \"true\"}}, {\"id\": \"common\", \"data\": {\"title\": \"Specific protein supplementation using soya, casein or whey differentially affects regional gut growth and luminal growth factor bioactivity in rats; implications for the treatment of gut injury and stimulating repair\", \"journal-title\": \"Food & Function\", \"volume\": \"9\", \"issue\": \"1\", \"ISSN\": \"2042-6496,2042-650X\", \"abstract\": \"Differential enhancement of luminal growth factor bioactivity and targeted regional gut growth occurs dependent on dietary protein supplement.\", \"authors\": [{\"author\": \"Tania Marchbank\", \"orcid\": \"http://orcid.org/0000-0003-2076-9098\"}, {\"author\": \"Nikki Mandir\"}, {\"author\": \"Denis Calnan\"}, {\"author\": \"Robert A. Goodlad\"}, {\"author\": \"Theo Podas\"}, {\"author\": \"Raymond J. Playford\", \"orcid\": \"http://orcid.org/0000-0003-1235-8504\"}], \"Embargo-end-date\": \"2018-06-30\", \"issn-map\": {\"2042-6496\": {\"pub-type\": [\"Print\"]}, \"2042-650X\": {\"pub-type\": [\"Electronic\"]}}}}, {\"id\": \"crossref\", \"data\": {\"doi\": \"10.1039/c7fo01251a\", \"publisher\": \"Royal Society of Chemistry (RSC)\", \"journal-title-short\": \"Food Funct.\"}}, {\"id\": \"pmc\", \"data\": {\"nlmta\": \"Food Funct\"}}]";
+    private static final String RESOURCE_METADATA = "{\"title\":\"Specific protein supplementation using soya, casein or whey differentially affects regional gut growth and luminal growth factor bioactivity in rats; implications for the treatment of gut injury and stimulating repair\",\"journal-title\":\"Food & Function\",\"volume\":\"9\",\"issue\":\"1\",\"abstract\":\"Differential enhancement of luminal growth factor bioactivity and targeted regional gut growth occurs dependent on dietary protein supplement.\",\"doi\":\"10.1039/c7fo01251a\",\"publisher\":\"Royal Society of Chemistry (RSC)\",\"authors\":\"[{\\\"author\\\":\\\"Tania Marchbank\\\",\\\"orcid\\\":\\\"http://orcid.org/0000-0003-2076-9098\\\"},{\\\"author\\\":\\\"Nikki Mandir\\\"},{\\\"author\\\":\\\"Denis Calnan\\\"},{\\\"author\\\":\\\"Robert A. Goodlad\\\"},{\\\"author\\\":\\\"Theo Podas\\\"},{\\\"author\\\":\\\"Raymond J. Playford\\\",\\\"orcid\\\":\\\"http://orcid.org/0000-0003-1235-8504\\\"}]\"}";
 
     private static final String NOTIFICATION_FROM_ADDRESS = "pass-production-noreply@jhu.edu";
 
@@ -81,7 +83,9 @@ public class ComposerTest {
         when(notificationConfig.getMode()).thenReturn(runtimeMode);
         when(notificationConfig.getRecipientConfigs()).thenReturn(singletonList(recipientConfig));
 
-        underTest = new Composer(notificationConfig, whitelister);
+        ObjectMapper mapper = new ObjectMapper();
+
+        underTest = new Composer(notificationConfig, new RecipientAnalyzer(whitelister), mapper);
     }
 
     /**
@@ -99,7 +103,7 @@ public class ComposerTest {
         URI submissionUri = URI.create("uri:" + UUID.randomUUID().toString());
         String userUri = "mailto:jane_professor@jhu.edu";
         URI mailtoUri = URI.create(userUri);
-        submission.setMetadata(METADATA_JSON_BLOB);
+        submission.setMetadata(RESOURCE_METADATA);
         submission.setId(submissionUri);
         submission.setSubmitter(mailtoUri);
         event.setSubmission(submissionUri);
@@ -115,7 +119,7 @@ public class ComposerTest {
         assertEquals(userUri, params.get(Param.TO));
         assertEquals(NOTIFICATION_FROM_ADDRESS, params.get(Param.FROM));
         assertEquals(String.join(",", NOTIFICATION_GLOBAL_CC_ADDRESS), params.get(Param.CC));
-        assertEquals(METADATA_JSON_BLOB, params.get(Param.RESOURCE_METADATA));
+        assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_APPROVAL_INVITE, notification.getType());
 
         // TODO test event metadata?
@@ -133,7 +137,7 @@ public class ComposerTest {
         URI submissionUri = URI.create("uri:" + UUID.randomUUID().toString());
         String userUri = "http://pass.jhu.edu/fcrepo/users/abc123";
         URI mailtoUri = URI.create(userUri);
-        submission.setMetadata(METADATA_JSON_BLOB);
+        submission.setMetadata(RESOURCE_METADATA);
         submission.setId(submissionUri);
         submission.setSubmitter(mailtoUri);
         event.setSubmission(submissionUri);
@@ -149,7 +153,7 @@ public class ComposerTest {
         assertEquals(userUri, params.get(Param.TO));
         assertEquals(NOTIFICATION_FROM_ADDRESS, params.get(Param.FROM));
         assertEquals(String.join(",", NOTIFICATION_GLOBAL_CC_ADDRESS), params.get(Param.CC));
-        assertEquals(METADATA_JSON_BLOB, params.get(Param.RESOURCE_METADATA));
+        assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_APPROVAL_REQUESTED, notification.getType());
 
         // TODO test event metadata?
@@ -166,7 +170,7 @@ public class ComposerTest {
         Submission submission = new Submission();
         URI submissionUri = URI.create("uri:" + UUID.randomUUID().toString());
         String preparersUri = "http://pass.jhu.edu/fcrepo/users/abc123";
-        submission.setMetadata(METADATA_JSON_BLOB);
+        submission.setMetadata(RESOURCE_METADATA);
         submission.setId(submissionUri);
         submission.setPreparers(singletonList(URI.create(preparersUri)));
         event.setSubmission(submissionUri);
@@ -182,7 +186,7 @@ public class ComposerTest {
         assertEquals(preparersUri, params.get(Param.TO));
         assertEquals(NOTIFICATION_FROM_ADDRESS, params.get(Param.FROM));
         assertEquals(String.join(",", NOTIFICATION_GLOBAL_CC_ADDRESS), params.get(Param.CC));
-        assertEquals(METADATA_JSON_BLOB, params.get(Param.RESOURCE_METADATA));
+        assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_CHANGES_REQUESTED, notification.getType());
 
         // TODO test event metadata?
@@ -199,7 +203,7 @@ public class ComposerTest {
         Submission submission = new Submission();
         URI submissionUri = URI.create("uri:" + UUID.randomUUID().toString());
         String preparersUri = "http://pass.jhu.edu/fcrepo/users/abc123";
-        submission.setMetadata(METADATA_JSON_BLOB);
+        submission.setMetadata(RESOURCE_METADATA);
         submission.setId(submissionUri);
         submission.setPreparers(singletonList(URI.create(preparersUri)));
         event.setSubmission(submissionUri);
@@ -215,7 +219,7 @@ public class ComposerTest {
         assertEquals(preparersUri, params.get(Param.TO));
         assertEquals(NOTIFICATION_FROM_ADDRESS, params.get(Param.FROM));
         assertEquals(String.join(",", NOTIFICATION_GLOBAL_CC_ADDRESS), params.get(Param.CC));
-        assertEquals(METADATA_JSON_BLOB, params.get(Param.RESOURCE_METADATA));
+        assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_SUBMISSION_SUBMITTED, notification.getType());
 
         // TODO test event metadata?
@@ -233,7 +237,7 @@ public class ComposerTest {
         URI submissionUri = URI.create("uri:" + UUID.randomUUID().toString());
         String preparersUri = "http://pass.jhu.edu/fcrepo/users/abc123";
         String submitterUri = "http://pass.jhu.edu/fcrepo/users/xyz789";
-        submission.setMetadata(METADATA_JSON_BLOB);
+        submission.setMetadata(RESOURCE_METADATA);
         submission.setId(submissionUri);
         submission.setPreparers(singletonList(URI.create(preparersUri)));
         submission.setSubmitter(URI.create(submitterUri));
@@ -251,7 +255,7 @@ public class ComposerTest {
         assertEquals(submitterUri, params.get(Param.TO));
         assertEquals(NOTIFICATION_FROM_ADDRESS, params.get(Param.FROM));
         assertEquals(String.join(",", NOTIFICATION_GLOBAL_CC_ADDRESS), params.get(Param.CC));
-        assertEquals(METADATA_JSON_BLOB, params.get(Param.RESOURCE_METADATA));
+        assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_SUBMISSION_CANCELLED, notification.getType());
 
         // TODO test event metadata?
@@ -269,7 +273,7 @@ public class ComposerTest {
         URI submissionUri = URI.create("uri:" + UUID.randomUUID().toString());
         String preparersUri = "http://pass.jhu.edu/fcrepo/users/abc123";
         String submitterUri = "http://pass.jhu.edu/fcrepo/users/xyz789";
-        submission.setMetadata(METADATA_JSON_BLOB);
+        submission.setMetadata(RESOURCE_METADATA);
         submission.setId(submissionUri);
         submission.setPreparers(singletonList(URI.create(preparersUri)));
         submission.setSubmitter(URI.create(submitterUri));
@@ -287,7 +291,7 @@ public class ComposerTest {
         assertEquals(preparersUri, params.get(Param.TO));
         assertEquals(NOTIFICATION_FROM_ADDRESS, params.get(Param.FROM));
         assertEquals(String.join(",", NOTIFICATION_GLOBAL_CC_ADDRESS), params.get(Param.CC));
-        assertEquals(METADATA_JSON_BLOB, params.get(Param.RESOURCE_METADATA));
+        assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_SUBMISSION_CANCELLED, notification.getType());
 
         // TODO test event metadata?
@@ -306,7 +310,7 @@ public class ComposerTest {
         URI submissionUri = URI.create("uri:" + UUID.randomUUID().toString());
         String preparersUri = "http://pass.jhu.edu/fcrepo/users/abc123";
         String submitterUri = "http://pass.jhu.edu/fcrepo/users/xyz789";
-        submission.setMetadata(METADATA_JSON_BLOB);
+        submission.setMetadata(RESOURCE_METADATA);
         submission.setId(submissionUri);
         submission.setPreparers(singletonList(URI.create(preparersUri)));
         submission.setSubmitter(URI.create(submitterUri));
@@ -323,7 +327,37 @@ public class ComposerTest {
                 mapper.writerWithDefaultPrettyPrinter().writeValueAsString(notification.getParameters()));
 
         System.err.println(escapedOut);
+    }
 
+    @Test
+    public void testModeFilter() {
+        RecipientConfig prod = new RecipientConfig();
+        prod.setMode(Mode.PRODUCTION);
 
+        RecipientConfig demo = new RecipientConfig();
+        demo.setMode(Mode.DEMO);
+
+        RecipientConfig disabled = new RecipientConfig();
+        disabled.setMode(Mode.DISABLED);
+
+        NotificationConfig config = new NotificationConfig();
+        config.setRecipientConfigs(Arrays.asList(prod, demo, disabled));
+
+        config.setMode(Mode.PRODUCTION);
+        assertTrue(Composer.RecipientConfigFilter.modeFilter(config).test(prod));
+
+        config.setMode(Mode.DEMO);
+        assertTrue(Composer.RecipientConfigFilter.modeFilter(config).test(demo));
+
+        config.setMode(Mode.DISABLED);
+        assertTrue(Composer.RecipientConfigFilter.modeFilter(config).test(disabled));
+
+        assertFalse(Composer.RecipientConfigFilter.modeFilter(config).test(demo));
+        assertFalse(Composer.RecipientConfigFilter.modeFilter(config).test(prod));
+
+        config.setMode(Mode.PRODUCTION);
+        config.setRecipientConfigs(Arrays.asList(prod, demo));
+
+        assertFalse(Composer.RecipientConfigFilter.modeFilter(config).test(disabled));
     }
 }

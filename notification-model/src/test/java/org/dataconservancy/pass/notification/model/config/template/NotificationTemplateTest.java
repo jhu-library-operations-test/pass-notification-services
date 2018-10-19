@@ -21,20 +21,20 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.dataconservancy.pass.notification.model.config.template.TemplatePrototype.Name.BODY;
-import static org.dataconservancy.pass.notification.model.config.template.TemplatePrototype.Name.FOOTER;
-import static org.dataconservancy.pass.notification.model.config.template.TemplatePrototype.Name.SUBJECT;
+import static org.dataconservancy.pass.notification.model.config.template.NotificationTemplate.Name.BODY;
+import static org.dataconservancy.pass.notification.model.config.template.NotificationTemplate.Name.FOOTER;
+import static org.dataconservancy.pass.notification.model.config.template.NotificationTemplate.Name.SUBJECT;
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-public class TemplatePrototypeTest extends AbstractJacksonMappingTest {
+public class NotificationTemplateTest extends AbstractJacksonMappingTest {
 
     private final String TEMPLATE_JSON = "" +
             "{\n" +
             "        \"notification\": \"SUBMISSION_APPROVAL_INVITE\",\n" +
-            "        \"refs\": {\n" +
+            "        \"templates\": {\n" +
             "          \"SUBJECT\": \"PASS Submission Approval: ${RESOURCE_METADATA.title}\",\n" +
             "          \"BODY\": \"classpath*:pass-body-submission-approval-invite-template.vm\",\n" +
             "          \"FOOTER\": \"classpath*:pass-footer-template.vm\"\n" +
@@ -43,13 +43,13 @@ public class TemplatePrototypeTest extends AbstractJacksonMappingTest {
 
     @Test
     public void parseJson() throws IOException {
-        TemplatePrototype template = mapper.readValue(TEMPLATE_JSON, TemplatePrototype.class);
+        NotificationTemplate template = mapper.readValue(TEMPLATE_JSON, NotificationTemplate.class);
 //        mapper.writer(SerializationFeature.INDENT_OUTPUT).writeValue(System.err, template);
         assertEquals(Notification.Type.SUBMISSION_APPROVAL_INVITE, template.getNotificationType());
-        assertEquals(3, template.getRefs().size());
-        assertEquals("PASS Submission Approval: ${RESOURCE_METADATA.title}", template.getRefs().get(SUBJECT));
-        assertEquals("classpath*:pass-body-submission-approval-invite-template.vm", template.getRefs().get(BODY));
-        assertEquals("classpath*:pass-footer-template.vm", template.getRefs().get(FOOTER));
-        assertRoundTrip(template, TemplatePrototype.class);
+        assertEquals(3, template.getTemplates().size());
+        assertEquals("PASS Submission Approval: ${RESOURCE_METADATA.title}", template.getTemplates().get(SUBJECT));
+        assertEquals("classpath*:pass-body-submission-approval-invite-template.vm", template.getTemplates().get(BODY));
+        assertEquals("classpath*:pass-footer-template.vm", template.getTemplates().get(FOOTER));
+        assertRoundTrip(template, NotificationTemplate.class);
     }
 }

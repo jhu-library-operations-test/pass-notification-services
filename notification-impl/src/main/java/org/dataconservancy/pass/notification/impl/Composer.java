@@ -15,6 +15,9 @@
  */
 package org.dataconservancy.pass.notification.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
 import org.dataconservancy.pass.notification.model.Notification;
@@ -23,16 +26,19 @@ import org.dataconservancy.pass.notification.model.config.NotificationConfig;
 import org.dataconservancy.pass.notification.model.config.RecipientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ReflectionUtils;
 
-import java.net.URI;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
-import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toSet;
+import static java.lang.String.join;
+import static org.dataconservancy.pass.notification.impl.Composer.RecipientConfigFilter.modeFilter;
 
 /**
  * Composes a {@link Notification} from a {@link SubmissionEvent} and its corresponding {@link Submission}, according
@@ -58,18 +64,21 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
 
     private RecipientConfig recipientConfig;
 
-    private Function<Collection<String>, Collection<String>> whitelist;
+    private RecipientAnalyzer recipientAnalyzer;
 
-    public Composer(NotificationConfig config, Function<Collection<String>, Collection<String>> whitelist) {
+    private ObjectMapper mapper;
+
+    public Composer(NotificationConfig config, ObjectMapper mapper) {
+        this.mapper = mapper;
         Objects.requireNonNull(config, "NotificationConfig must not be null.");
-        Objects.requireNonNull(whitelist, "Whitelist must not be null.");
+        recipientConfig = getRecipientConfig(config);
+        recipientAnalyzer = new RecipientAnalyzer(new SimpleWhitelist(recipientConfig));
+    }
 
-        this.whitelist = whitelist;
-
-        recipientConfig = config.getRecipientConfigs().stream()
-                .filter(rc -> config.getMode() == rc.getMode()).findAny()
-                .orElseThrow(() ->
-                        new RuntimeException("Missing recipient configuration for Mode '" + config.getMode() + "'"));
+    public Composer(NotificationConfig config, RecipientAnalyzer recipientAnalyzer, ObjectMapper mapper) {
+        this(config, mapper);
+        Objects.requireNonNull(config, "RecipientAnalyzer must not be null.");
+        this.recipientAnalyzer = recipientAnalyzer;
     }
 
     /**
@@ -95,88 +104,151 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
         notification.setParameters(params);
 
         notification.setEventUri(event.getId());
-        params.put(Notification.Param.EVENT_METADATA, "");  // TODO: invoke adapter to produce JSON representation of event?  why not just use the event URI
+        params.put(Notification.Param.EVENT_METADATA, eventMetadata(event, mapper));
 
         Collection<String> cc = recipientConfig.getGlobalCc();
         if (cc != null && !cc.isEmpty()) {
             notification.setCc(cc);
-            params.put(Notification.Param.CC, String.join(",", cc));
+            params.put(Notification.Param.CC, join(",", cc));
         }
 
         notification.setResourceUri(submission.getId());
-        params.put(Notification.Param.RESOURCE_METADATA, submission.getMetadata());
+        params.put(Notification.Param.RESOURCE_METADATA, resourceMetadata(submission, mapper));
 
         String from = recipientConfig.getFromAddress();
         notification.setSender(from);
         params.put(Notification.Param.FROM, from);
 
+        Collection<String> recipients = recipientAnalyzer.apply(submission, event);
+        notification.setRecipient(recipients);
+        params.put(Notification.Param.TO, join(",", recipients));
+
         switch (event.getEventType()) {
             case APPROVAL_REQUESTED_NEWUSER: {
                 notification.setType(Notification.Type.SUBMISSION_APPROVAL_INVITE);
-                // to: submission.getSubmitter() // the AS
-                Collection<String> whitelistedRecipient =
-                        whitelist.apply(singleton(submission.getSubmitter().toString()));
-                notification.setRecipient(whitelistedRecipient);
-                params.put(Notification.Param.TO, String.join(",", whitelistedRecipient));
                 // TODO: generate invite link, attach to parameters map
                 break;
             }
 
             case APPROVAL_REQUESTED: {
                 notification.setType(Notification.Type.SUBMISSION_APPROVAL_REQUESTED);
-                // to: submission.getSubmitter() // the AS
-                Collection<String> whitelistedRecipient =
-                        whitelist.apply(singleton(submission.getSubmitter().toString()));
-                notification.setRecipient(whitelistedRecipient);
-                params.put(Notification.Param.TO, String.join(",", whitelistedRecipient));
                 // TODO: generate approval requested link, attach to parameters map
                 break;
             }
 
             case CHANGES_REQUESTED: {
                 notification.setType(Notification.Type.SUBMISSION_CHANGES_REQUESTED);
-                // to: submission.preparers
-                Collection<String> preparersAsStrings =
-                        whitelist.apply(submission.getPreparers().stream().map(URI::toString).collect(toSet()));
-                notification.setRecipient(preparersAsStrings);
-                params.put(Notification.Param.TO, String.join(",", preparersAsStrings));
                 // TODO: generate changes requested link, attach to parameters map
                 break;
             }
 
             case SUBMITTED: {
                 notification.setType(Notification.Type.SUBMISSION_SUBMISSION_SUBMITTED);
-                // to: submission.preparers
-                Collection<String> preparersAsStrings = whitelist.apply(
-                        submission.getPreparers().stream().map(URI::toString).collect(toSet()));
-                notification.setRecipient(preparersAsStrings);
-                params.put(Notification.Param.TO, String.join(",", preparersAsStrings));
                 // TODO: generate submission submitted link, attach to parameters map
                 break;
             }
 
             case CANCELLED: {
                 notification.setType(Notification.Type.SUBMISSION_SUBMISSION_CANCELLED);
-                String performedBy = event.getPerformedBy().toString();
-                Collection<String> recipients;
-                if (submission.getSubmitter().toString().equals(performedBy)) {
-                    recipients =
-                            whitelist.apply(submission.getPreparers().stream().map(URI::toString).collect(toSet()));
-                } else {
-                    recipients =
-                            whitelist.apply(singleton(submission.getSubmitter().toString()));
-                }
-                notification.setRecipient(recipients);
-                params.put(Notification.Param.TO, String.join(",", recipients));
                 break;
             }
 
             default: {
-                LOG.warn("Unhandled SubmissionEvent type {}", event.getEventType());
-                return null;
+                throw new RuntimeException("Unknown SubmissionEvent type '" + event.getEventType() + "'");
             }
         }
 
         return notification;
+    }
+
+    RecipientConfig getRecipientConfig() {
+        return recipientConfig;
+    }
+
+    void setRecipientConfig(RecipientConfig recipientConfig) {
+        this.recipientConfig = recipientConfig;
+    }
+
+    RecipientAnalyzer getRecipientAnalyzer() {
+        return recipientAnalyzer;
+    }
+
+    void setRecipientAnalyzer(RecipientAnalyzer recipientAnalyzer) {
+        this.recipientAnalyzer = recipientAnalyzer;
+    }
+
+    static RecipientConfig getRecipientConfig(NotificationConfig config) {
+        return config.getRecipientConfigs().stream()
+                .filter(modeFilter(config)).findAny()
+                .orElseThrow(() ->
+                        new RuntimeException("Missing recipient configuration for Mode '" + config.getMode() + "'"));
+    }
+
+    public static String resourceMetadata(Submission submission, ObjectMapper mapper) {
+        String metadata = submission.getMetadata();
+        if (metadata == null || metadata.trim().length() == 0) {
+            return "{}";
+        }
+        JsonNode metadataNode = null;
+        try {
+            metadataNode = mapper.readTree(metadata);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        ObjectNode resourceMetadata = mapper.createObjectNode();
+        resourceMetadata.put("title", field("title", metadataNode).orElse(""));
+        resourceMetadata.put("journal-title", field("journal-title", metadataNode).orElse(""));
+        resourceMetadata.put("volume", field("volume", metadataNode).orElse(""));
+        resourceMetadata.put("issue", field("issue", metadataNode).orElse(""));
+        resourceMetadata.put("abstract", field("abstract", metadataNode).orElse(""));
+        resourceMetadata.put("doi", field("doi", metadataNode).orElse(""));
+        resourceMetadata.put("publisher", field("publisher", metadataNode).orElse(""));
+        resourceMetadata.put("authors", field("authors", metadataNode).orElse(""));
+        return resourceMetadata.toString();
+    }
+
+    public static String eventMetadata(SubmissionEvent event, ObjectMapper mapper) {
+        ObjectNode eventMetadata = mapper.createObjectNode();
+        eventMetadata.put("id", field("id", event).orElse(""));
+        eventMetadata.put("comment", field("comment", event).orElse(""));
+        eventMetadata.put("performedDate", field("performedDate", event).orElse(""));
+        eventMetadata.put("performedBy", field("performedBy", event).orElse(""));
+        eventMetadata.put("performerRole", field("performerRole", event).orElse(""));
+        eventMetadata.put("performedDate", field("performedDate", event).orElse(""));
+        eventMetadata.put("eventType", field("eventType", event).orElse(""));
+        return eventMetadata.toString();
+    }
+
+    static class RecipientConfigFilter {
+
+        /**
+         * Selects the correct {@link RecipientConfig} for the current {@link NotificationConfig#mode mode} of Notification Services.
+         * @param config the Notification Services runtime configuration
+         * @return the current mode's {@code RecipientConfig}
+         */
+        static Predicate<RecipientConfig> modeFilter(NotificationConfig config) {
+            return (rc) -> config.getMode() == rc.getMode();
+        }
+
+    }
+
+    static Optional<String> field(String fieldname, JsonNode metadata) {
+        Optional<JsonNode> node = Optional.ofNullable(metadata.findValue(fieldname));
+        if (node.isPresent() && node.get().isArray()) {
+            return node.map(Objects::toString);
+        }
+        return node.map(JsonNode::asText);
+    }
+
+    static Optional<String> field(String fieldname, SubmissionEvent event) {
+        Optional<Field> field = Optional.ofNullable(ReflectionUtils.findField(SubmissionEvent.class, fieldname));
+        return field
+                .map(f -> {
+                    ReflectionUtils.makeAccessible(f);
+                    return f;
+                })
+                .map(f -> ReflectionUtils.getField(f, event))
+                .map(Object::toString);
     }
 }
