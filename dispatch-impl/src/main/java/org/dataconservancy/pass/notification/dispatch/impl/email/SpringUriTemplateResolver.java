@@ -25,6 +25,7 @@ import org.springframework.core.io.UrlResource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.InvalidPathException;
 
 import static java.lang.String.format;
 
@@ -67,7 +68,7 @@ public class SpringUriTemplateResolver implements TemplateResolver {
 
         try {
             return new FileSystemResource(template).getInputStream();
-        } catch (IOException e) {
+        } catch (IOException | InvalidPathException e) {
             LOG.debug("Unable to resolve template named '{}' (value: '{}') as a Spring Resource.", name, template);
         }
 
