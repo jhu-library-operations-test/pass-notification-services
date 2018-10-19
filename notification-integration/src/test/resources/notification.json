@@ -26,5 +26,8 @@
     "port": "587",
     "smtpUser": "foo",
     "smtpPassword": "bar"
+  },
+  "user-token-generator": {
+    "key": "BETKPFHWGGDIEWIIYKYQ33LUS4"
   }
 }

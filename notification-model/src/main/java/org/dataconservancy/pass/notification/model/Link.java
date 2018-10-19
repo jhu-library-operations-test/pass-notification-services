@@ -15,6 +15,7 @@
  */
 package org.dataconservancy.pass.notification.model;
 
+import java.net.URI;
 import java.util.Objects;
 
 /**
@@ -24,13 +25,13 @@ public class Link {
 
     private String rel;
 
-    private String href;
+    private URI href;
 
     public Link() {
 
     }
 
-    public Link(String href, String rel) {
+    public Link(URI href, String rel) {
         Objects.requireNonNull(href, "Link must not be null.");
         Objects.requireNonNull(rel, "Rel must not be null.");
 
@@ -47,11 +48,11 @@ public class Link {
         this.rel = rel;
     }
 
-    public String getHref() {
+    public URI getHref() {
         return href;
     }
 
-    public void setHref(String href) {
+    public void setHref(URI href) {
         Objects.requireNonNull(rel, "Href must not be null.");
         this.href = href;
     }
@@ -78,6 +79,34 @@ public class Link {
                 "rel='" + rel + '\'' +
                 ", href='" + href + '\'' +
                 '}';
+    }
+    
+    
+    public interface Rels {
+        
+        /** 
+         * Link to view a submission.
+         * <p>
+         * This is used to link to a Submission in the UI, without an 
+         * expectation that any action needs to be taken.
+         * <p> 
+         */
+        public static final String SUBMISSION_VIEW = "submission-view";
+        
+        /** 
+         * Link to Review a submission.
+         * <p>
+         * This is used to link to a Submission in the UI, with
+         * expectation that some sort of action needs to be taken.
+         * <p> 
+         */
+        public static final String SUBMISSION_REVIEW = "submission-review";
+        
+        /**
+         * Link which invites a new user to review a submission.
+         */
+        public static final String SUBMISSION_REVIEW_INVITE = "submission-review-invite";
+        
     }
 
 }

@@ -34,6 +34,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
+        
+        <dependency>
+          <groupId>org.dataconservancy.pass</groupId>
+          <artifactId>pass-authz-usertoken</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.dataconservancy.pass</groupId>

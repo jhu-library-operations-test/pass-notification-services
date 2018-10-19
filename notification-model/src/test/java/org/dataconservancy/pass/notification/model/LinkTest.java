@@ -19,6 +19,7 @@ import org.dataconservancy.pass.notification.model.config.AbstractJacksonMapping
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collection;
 
 import static org.junit.Assert.*;
@@ -59,7 +60,7 @@ public class LinkTest extends AbstractJacksonMappingTest {
         Link link = mapper.readValue(LINK_JSON, Link.class);
 
         assertEquals("submissionResource", link.getRel());
-        assertEquals("https://pass.jhu.edu/fcrepo/rest/submissions/abc123", link.getHref());
+        assertEquals(URI.create("https://pass.jhu.edu/fcrepo/rest/submissions/abc123"), link.getHref());
         assertRoundTrip(link, Link.class);
     }
 

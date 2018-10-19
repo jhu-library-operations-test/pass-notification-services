@@ -50,6 +50,12 @@ public class NotificationConfig {
      */
     @JsonProperty("smtp")
     private SmtpServerConfig smtpConfig;
+    
+    /** 
+     * User invitation token encryption key.
+     */
+    @JsonProperty("user-token-generator")
+    private UserTokenGeneratorConfig tokenConfig;
 
     public Mode getMode() {
         return mode;
@@ -82,6 +88,14 @@ public class NotificationConfig {
     public void setSmtpConfig(SmtpServerConfig smtpConfig) {
         this.smtpConfig = smtpConfig;
     }
+    
+    public UserTokenGeneratorConfig getUserTokenGeneratorConfig() {
+        return tokenConfig;
+    }
+    
+    public void setUserTokenGeneratorConfig(UserTokenGeneratorConfig config) {
+        this.tokenConfig = config;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -93,12 +107,13 @@ public class NotificationConfig {
         return Objects.equals(mode, that.mode) &&
                 Objects.equals(templates, that.templates) &&
                 Objects.equals(recipientConfigs, that.recipientConfigs) &&
-                Objects.equals(smtpConfig, that.smtpConfig);
+                Objects.equals(smtpConfig, that.smtpConfig) &&
+                Objects.equals(tokenConfig, that.tokenConfig);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mode, templates, recipientConfigs, smtpConfig);
+        return Objects.hash(mode, templates, recipientConfigs, smtpConfig, tokenConfig);
     }
 
     @Override
@@ -108,6 +123,7 @@ public class NotificationConfig {
                 ", templates=" + templates +
                 ", recipientConfigs=" + recipientConfigs +
                 ", smtpConfig=" + smtpConfig +
+                ", tokenConfig=" + tokenConfig +
                 '}';
     }
 }
