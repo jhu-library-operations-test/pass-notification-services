@@ -106,8 +106,11 @@ public class ComposerTest {
         
         submissionLinkAnalyzer = mock(SubmissionLinkAnalyzer.class);
         when(submissionLinkAnalyzer.apply(any(), any())).thenReturn(generatedSubmissionLinks.stream());
+        
+        LinkValidator linkValidator = mock(LinkValidator.class);
+        when(linkValidator.test(any())).thenReturn(true);
 
-        underTest = new Composer(notificationConfig, new RecipientAnalyzer(whitelister), submissionLinkAnalyzer, mapper);
+        underTest = new Composer(notificationConfig, new RecipientAnalyzer(whitelister), submissionLinkAnalyzer, linkValidator, mapper);
     }
 
     /**

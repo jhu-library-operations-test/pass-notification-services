@@ -64,6 +64,9 @@ public class NotificationConfig {
      */
     @JsonProperty("user-token-generator")
     private UserTokenGeneratorConfig tokenConfig;
+    
+    @JsonProperty("link-validators")
+    private Collection<LinkValidationRule> linkValidatorConfig;
 
     /**
      * The runtime mode of Notification Services.  Portions of the configuration may be differentiated by mode, for example, there can be a {@link RecipientConfig} per {@link Mode}.
@@ -127,6 +130,14 @@ public class NotificationConfig {
     public void setUserTokenGeneratorConfig(UserTokenGeneratorConfig config) {
         this.tokenConfig = config;
     }
+    
+    public Collection<LinkValidationRule> getLinkValidatorConfigs() {
+        return linkValidatorConfig;
+    }
+    
+    public void setLinkValidationRules(Collection<LinkValidationRule> configs) {
+        this.linkValidatorConfig = configs;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -139,12 +150,13 @@ public class NotificationConfig {
                 Objects.equals(templates, that.templates) &&
                 Objects.equals(recipientConfigs, that.recipientConfigs) &&
                 Objects.equals(smtpConfig, that.smtpConfig) &&
-                Objects.equals(tokenConfig, that.tokenConfig);
+                Objects.equals(tokenConfig, that.tokenConfig) &&
+                Objects.equals(linkValidatorConfig, that.linkValidatorConfig);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mode, templates, recipientConfigs, smtpConfig, tokenConfig);
+        return Objects.hash(mode, templates, recipientConfigs, smtpConfig, tokenConfig, linkValidatorConfig);
     }
 
     @Override
@@ -155,6 +167,7 @@ public class NotificationConfig {
                 ", recipientConfigs=" + recipientConfigs +
                 ", smtpConfig=" + smtpConfig +
                 ", tokenConfig=" + tokenConfig +
+                ", linkValidatorCOnfig=" + linkValidatorConfig +
                 '}';
     }
 }

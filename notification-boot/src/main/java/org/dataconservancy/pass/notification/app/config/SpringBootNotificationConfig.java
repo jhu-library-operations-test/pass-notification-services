@@ -31,6 +31,7 @@ import org.dataconservancy.pass.notification.dispatch.impl.email.SpringUriTempla
 import org.dataconservancy.pass.notification.dispatch.impl.email.TemplateParameterizer;
 import org.dataconservancy.pass.notification.dispatch.impl.email.TemplateResolver;
 import org.dataconservancy.pass.notification.impl.Composer;
+import org.dataconservancy.pass.notification.impl.LinkValidator;
 import org.dataconservancy.pass.notification.impl.RecipientAnalyzer;
 import org.dataconservancy.pass.notification.impl.SimpleWhitelist;
 import org.dataconservancy.pass.notification.impl.SubmissionLinkAnalyzer;
@@ -237,10 +238,16 @@ public class SpringBootNotificationConfig {
     public SubmissionLinkAnalyzer submissionLinkAnalyzer(UserTokenGenerator generator) {
         return new SubmissionLinkAnalyzer(generator);
     }
+    
+    @Bean
+    public LinkValidator linkValidator(NotificationConfig config) {
+        return new LinkValidator(config);
+    }
 
     @Bean
-    public Composer composer(NotificationConfig notificationConfig, RecipientAnalyzer recipientAnalyzer, SubmissionLinkAnalyzer sla, ObjectMapper objectMapper) {
-        return new Composer(notificationConfig, recipientAnalyzer, sla, objectMapper);
+    public Composer composer(NotificationConfig notificationConfig, RecipientAnalyzer recipientAnalyzer,
+            SubmissionLinkAnalyzer sla, LinkValidator lv, ObjectMapper objectMapper) {
+        return new Composer(notificationConfig, recipientAnalyzer, sla, lv, objectMapper);
     }
 
 }

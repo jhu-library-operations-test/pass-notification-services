@@ -62,5 +62,21 @@
   },
   "user-token-generator": {
     "key": "BETKPFHWGGDIEWIIYKYQ33LUS4"
-  }
+  },
+  "link-validators": [
+    {
+      "rels" : [
+        "submission-view",
+        "submission-review",
+        "submission-review-invite"
+      ],
+      "requiredBaseURI" : "http://example.org",
+      "throwExceptionWhenInvalid": true
+    }, 
+    {
+      "rels": ["*"],
+      "requiredBaseURI" : "http",
+      "throwExceptionWhenInvalid": false
+    }
+  ]
 }

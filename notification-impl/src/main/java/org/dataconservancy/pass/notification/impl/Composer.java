@@ -69,6 +69,8 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
     private RecipientAnalyzer recipientAnalyzer;
     
     private SubmissionLinkAnalyzer submissionLinkAnalyzer;
+    
+    private LinkValidator linkValidator;
 
     private ObjectMapper mapper;
 
@@ -78,13 +80,16 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
         recipientConfig = getRecipientConfig(config);
         recipientAnalyzer = new RecipientAnalyzer(new SimpleWhitelist(recipientConfig));
         submissionLinkAnalyzer = new SubmissionLinkAnalyzer(new UserTokenGenerator(config));
+        linkValidator = new LinkValidator(config);
     }
 
-    public Composer(NotificationConfig config, RecipientAnalyzer recipientAnalyzer, SubmissionLinkAnalyzer submissionLinkAnalyzer, ObjectMapper mapper) {
+    public Composer(NotificationConfig config, RecipientAnalyzer recipientAnalyzer,
+            SubmissionLinkAnalyzer submissionLinkAnalyzer, LinkValidator linkValidator, ObjectMapper mapper) {
         this(config, mapper);
         Objects.requireNonNull(config, "RecipientAnalyzer must not be null.");
         this.recipientAnalyzer = recipientAnalyzer;
         this.submissionLinkAnalyzer = submissionLinkAnalyzer;
+        this.linkValidator = linkValidator;
     }
 
     /**
@@ -130,6 +135,7 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
         params.put(Notification.Param.TO, join(",", recipients));
         
         params.put(Notification.Param.LINKS, concat(submissionLinkAnalyzer.apply(submission, event))
+                .filter(linkValidator)
                 .collect(serialized()));
 
         switch (event.getEventType()) {
