@@ -25,6 +25,7 @@ import org.dataconservancy.pass.notification.SpringBootIntegrationConfig;
 import org.dataconservancy.pass.notification.app.NotificationApp;
 import org.dataconservancy.pass.notification.impl.Composer;
 import org.dataconservancy.pass.notification.impl.ComposerIT;
+import org.dataconservancy.pass.notification.model.Link;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.SimpleNotification;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
@@ -52,7 +53,10 @@ import java.util.concurrent.Callable;
 
 import static java.lang.String.join;
 import static java.nio.charset.Charset.forName;
+import static java.util.Arrays.asList;
 import static org.apache.commons.io.IOUtils.resourceToString;
+import static org.dataconservancy.pass.notification.impl.Links.serialized;
+import static org.dataconservancy.pass.notification.model.Link.Rels.SUBMISSION_REVIEW_INVITE;
 import static org.dataconservancy.pass.notification.model.Notification.Param.*;
 import static org.dataconservancy.pass.notification.model.Notification.Type.SUBMISSION_APPROVAL_INVITE;
 import static org.dataconservancy.pass.notification.util.mail.SimpleImapClient.getBodyAsText;
@@ -210,6 +214,8 @@ public class EmailDispatchImplIT {
         });
 
         config.setTemplates(Collections.singleton(template));
+        
+        Link link = new Link(URI.create("http://example.org/email/dispatch/myLink"), SUBMISSION_REVIEW_INVITE);
 
         SimpleNotification n = new SimpleNotification();
         n.setType(SUBMISSION_APPROVAL_INVITE);
@@ -223,6 +229,7 @@ public class EmailDispatchImplIT {
                 put(EVENT_METADATA, Composer.eventMetadata(event, objectMapper));
                 put(FROM, sender);
                 put(TO, recipient);
+                put(LINKS, asList(link).stream().collect(serialized()));
             }
         });
 
@@ -243,6 +250,7 @@ public class EmailDispatchImplIT {
         assertTrue(body.contains("prepared on your behalf by " + n.getParameters().get(FROM)));  // TODO FROM will be the global FROM, must insure the preparer User is represented in metadata.
         assertTrue(body.contains(event.getComment()));
         assertTrue(body.contains(expectedTitle));
+        assertTrue(body.contains("Please review the submission at the following URL: " + link.getHref()));
     }
 
     private static String packageAsPath() {
