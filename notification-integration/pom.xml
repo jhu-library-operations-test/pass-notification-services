@@ -31,6 +31,8 @@
     <properties>
         <mail.skip>false</mail.skip>
         <fcrepo.skip>false</fcrepo.skip>
+        <ldap.skip>false</ldap.skip>
+        <ldap.waitms>5000</ldap.waitms>
         <mail.server>${docker.host.address}</mail.server>
         <mail.waitms>15000</mail.waitms>
         <fcrepo.server>${docker.host.address}</fcrepo.server>
@@ -51,7 +53,8 @@
                 </property>
             </activation>
             <properties>
-                <mail.waitms>120000</mail.waitms>
+                <mail.waitms>30000</mail.waitms>
+                <ldap.waitms>15000</ldap.waitms>
             </properties>
         </profile>
     </profiles>
@@ -75,7 +78,7 @@
                                 <portName>mail.smtp.port</portName>
                                 <portName>mail.imap.port</portName>
                                 <portName>mail.imaps.port</portName>
-                                <portName>mail.msp.tls.port</portName>
+                                <portName>mail.msp.port</portName>
                                 <portName>fcrepo.http.port</portName>
                                 <portName>fcrepo.jms.port</portName>
                                 <portName>fcrepo.stomp.port</portName>
@@ -99,11 +102,9 @@
                         <es.host>${es.server}</es.host>
                         <es.port>${es.http.port}</es.port>
                         <pass.notification.smtp.host>${mail.server}</pass.notification.smtp.host>
-                        <pass.notification.smtp.port>${mail.smtp.port}</pass.notification.smtp.port>
+                        <pass.notification.smtp.port>${mail.msp.port}</pass.notification.smtp.port>
 
                         <!-- IMAP properties for ITs -->
-                        <mail.imap.user>emetsger@mail.local.domain</mail.imap.user>
-                        <mail.imap.password>moo</mail.imap.password>
                         <mail.imap.host>${mail.server}</mail.imap.host>
                         <mail.imap.port>${mail.imaps.port}</mail.imap.port>
                         <mail.imap.ssl.enable>true</mail.imap.ssl.enable>
@@ -111,6 +112,10 @@
                         <mail.imap.starttls.enable>true</mail.imap.starttls.enable>
                         <mail.imap.finalizecleanclose>false</mail.imap.finalizecleanclose>
 
+                        <!-- Default username / password when connecting to IMAP -->
+                        <!-- Override by setting the desired credentials on the SimpleImapClientFactory -->
+                        <mail.imap.user>staffwithnogrants@jhu.edu</mail.imap.user>
+                        <mail.imap.password>moo</mail.imap.password>
                     </systemProperties>
                 </configuration>
                 <executions>
@@ -141,10 +146,8 @@
                                 <hostname>mail</hostname>
                                 <domainname>local.domain</domainname>
                                 <ports>
-                                    <port>${mail.smtp.port}:25</port>
-                                    <port>${mail.imap.port}:143</port>
                                     <port>${mail.imaps.port}:993</port>
-                                    <port>${mail.msp.tls.port}:587</port>
+                                    <port>${mail.msp.port}:587</port>
                                 </ports>
                                 <volumes>
                                     <bind>
@@ -152,16 +155,33 @@
                                         <volume>mailstate:/var/mail-state</volume>
                                     </bind>
                                 </volumes>
+                                <links>
+                                    <link>ldap</link>
+                                </links>
                                 <env>
                                     <HOSTNAME>mail</HOSTNAME>
-                                    <DOMAINNAME>local.domain</DOMAINNAME>
+                                    <DOMAINNAME>jhu.edu</DOMAINNAME>
                                     <DMS_DEBUG>0</DMS_DEBUG>
                                     <ONE_DIR>1</ONE_DIR>
                                     <SMTP_ONLY>0</SMTP_ONLY>
                                     <PERMIT_DOCKER>network</PERMIT_DOCKER>
-                                    <OVERRIDE_HOSTNAME>mail.local.domain</OVERRIDE_HOSTNAME>
+                                    <OVERRIDE_HOSTNAME>mail.jhu.edu</OVERRIDE_HOSTNAME>
                                     <TLS_LEVEL>intermediate</TLS_LEVEL>
                                     <ENABLE_SPAMASSASSIN>0</ENABLE_SPAMASSASSIN>
+                                    <ENABLE_CLAMAV>0</ENABLE_CLAMAV>
+                                    <ENABLE_FAIL2BAN>0</ENABLE_FAIL2BAN>
+                                    <ENABLE_POSTGREY>0</ENABLE_POSTGREY>
+                                    <ENABLE_SASLAUTHD>0</ENABLE_SASLAUTHD>
+                                    <POSTMASTER_ADDRESS>root</POSTMASTER_ADDRESS>
+                                    <ENABLE_LDAP>1</ENABLE_LDAP>
+                                    <LDAP_SERVER_HOST>ldap</LDAP_SERVER_HOST>
+                                    <LDAP_SEARCH_BASE>ou=People,dc=pass</LDAP_SEARCH_BASE>
+                                    <LDAP_BIND_DN>cn=admin,dc=pass</LDAP_BIND_DN>
+                                    <LDAP_BIND_PW>password</LDAP_BIND_PW>
+                                    <LDAP_QUERY_FILTER_USER>(&amp;(objectClass=posixAccount)(mail=%s))</LDAP_QUERY_FILTER_USER>
+                                    <LDAP_QUERY_FILTER_GROUP>(&amp;(objectClass=posixAccount)(mailGroupMember=%s))</LDAP_QUERY_FILTER_GROUP>
+                                    <LDAP_QUERY_FILTER_ALIAS>(&amp;(objectClass=posixAccount)(mailAlias=%s))</LDAP_QUERY_FILTER_ALIAS>
+                                    <LDAP_QUERY_FILTER_DOMAIN>(|(mail=*@%s)(mailalias=*@%s)(mailGroupMember=*@%s))</LDAP_QUERY_FILTER_DOMAIN>
                                 </env>
                             </run>
                         </image>
@@ -188,12 +208,21 @@
                                     <FCREPO_PORT>${fcrepo.http.port}</FCREPO_PORT>
                                     <FCREPO_JMS_PORT>${fcrepo.jms.port}</FCREPO_JMS_PORT>
                                     <FCREPO_STOMP_PORT>${fcrepo.stomp.port}</FCREPO_STOMP_PORT>
-                                    <FCREPO_ACTIVEMQ_CONFIGURATION>classpath:/activemq-queue.xml
-                                    </FCREPO_ACTIVEMQ_CONFIGURATION>
+                                    <FCREPO_ACTIVEMQ_CONFIGURATION>classpath:/activemq-queue.xml</FCREPO_ACTIVEMQ_CONFIGURATION>
                                     <FCREPO_LOG_LEVEL>DEBUG</FCREPO_LOG_LEVEL>
-                                    <FCREPO_JMS_BASEURL>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/
-                                    </FCREPO_JMS_BASEURL>
+                                    <FCREPO_JMS_BASEURL>http://${fcrepo.server}:${fcrepo.http.port}/fcrepo/rest/</FCREPO_JMS_BASEURL>
                                 </env>
+                            </run>
+                        </image>
+
+                        <image>
+                            <alias>ldap</alias>
+                            <name>${docker.ldap.version}</name>
+                            <run>
+                                <skip>${ldap.skip}</skip>
+                                <wait>
+                                    <time>${ldap.waitms}</time>
+                                </wait>
                             </run>
                         </image>
 

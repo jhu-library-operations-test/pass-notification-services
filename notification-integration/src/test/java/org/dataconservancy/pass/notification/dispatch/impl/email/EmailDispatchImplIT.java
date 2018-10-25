@@ -16,13 +16,14 @@
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
 import org.dataconservancy.pass.model.User;
+import org.dataconservancy.pass.notification.SimpleImapClientFactory;
 import org.dataconservancy.pass.notification.SpringBootIntegrationConfig;
 import org.dataconservancy.pass.notification.app.NotificationApp;
+import org.dataconservancy.pass.notification.dispatch.DispatchException;
 import org.dataconservancy.pass.notification.impl.Composer;
 import org.dataconservancy.pass.notification.impl.ComposerIT;
 import org.dataconservancy.pass.notification.model.Link;
@@ -33,7 +34,10 @@ import org.dataconservancy.pass.notification.model.config.template.NotificationT
 import org.dataconservancy.pass.notification.util.async.Condition;
 import org.dataconservancy.pass.notification.util.mail.SimpleImapClient;
 import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,26 +47,28 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.mail.Message;
-import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-import static java.lang.String.join;
 import static java.nio.charset.Charset.forName;
 import static java.util.Arrays.asList;
 import static org.apache.commons.io.IOUtils.resourceToString;
 import static org.dataconservancy.pass.notification.impl.Links.serialized;
 import static org.dataconservancy.pass.notification.model.Link.Rels.SUBMISSION_REVIEW_INVITE;
-import static org.dataconservancy.pass.notification.model.Notification.Param.*;
+import static org.dataconservancy.pass.notification.model.Notification.Param.EVENT_METADATA;
+import static org.dataconservancy.pass.notification.model.Notification.Param.FROM;
+import static org.dataconservancy.pass.notification.model.Notification.Param.LINKS;
+import static org.dataconservancy.pass.notification.model.Notification.Param.RESOURCE_METADATA;
+import static org.dataconservancy.pass.notification.model.Notification.Param.TO;
 import static org.dataconservancy.pass.notification.model.Notification.Type.SUBMISSION_APPROVAL_INVITE;
 import static org.dataconservancy.pass.notification.util.mail.SimpleImapClient.getBodyAsText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -73,6 +79,12 @@ public class EmailDispatchImplIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(EmailDispatchImplIT.class);
 
+    private static final String SENDER = "staffWithGrants@jhu.edu";
+
+    private static final String RECIPIENT = "staffWithNoGrants@jhu.edu";
+
+    private static final String CC = "facultyWithGrants@jhu.edu";
+
     @Autowired
     private EmailDispatchImpl underTest;
 
@@ -80,7 +92,7 @@ public class EmailDispatchImplIT {
     private PassClient passClient;
 
     @Autowired
-    private SimpleImapClient imapClient;
+    private SimpleImapClientFactory imapClientFactory;
 
     @Autowired
     private NotificationConfig config;
@@ -88,21 +100,27 @@ public class EmailDispatchImplIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private SimpleImapClient imapClient;
+
+    @Before
+    public void setUp() throws Exception {
+        imapClientFactory.setImapUser(RECIPIENT);
+        imapClientFactory.setImapPass("moo");
+        imapClient = imapClientFactory.getObject();
+    }
+
     /**
      * Simple test insuring the basic parts of the dispatch email are where they belong.
      */
     @Test
     public void simpleSuccess() throws Exception {
-        String sender = "preparer@mail.local.domain";
-        String cc = "cc@mail.local.domain";
-        String recipient = "emetsger@mail.local.domain";
         String expectedBody = "Approval Invite Body\r\n\r\nApproval Invite Footer";
 
         SimpleNotification n = new SimpleNotification();
         n.setType(SUBMISSION_APPROVAL_INVITE);
-        n.setSender(sender);
-        n.setCc(Collections.singleton(cc));
-        n.setRecipient(Collections.singleton("mailto:" + recipient));
+        n.setSender(SENDER);
+        n.setCc(Collections.singleton(CC));
+        n.setRecipient(Collections.singleton("mailto:" + RECIPIENT));
 
         String messageId = underTest.dispatch(n);
         assertNotNull(messageId);
@@ -113,9 +131,9 @@ public class EmailDispatchImplIT {
 
         assertEquals("Approval Invite Subject", message.getSubject());
         assertEquals(expectedBody, getBodyAsText(message));
-        assertEquals(sender, message.getFrom()[0].toString());
-        assertEquals(cc, message.getRecipients(Message.RecipientType.CC)[0].toString());
-        assertEquals(recipient, message.getRecipients(Message.RecipientType.TO)[0].toString());
+        assertEquals(SENDER, message.getFrom()[0].toString());
+        assertEquals(CC, message.getRecipients(Message.RecipientType.CC)[0].toString());
+        assertEquals(RECIPIENT, message.getRecipients(Message.RecipientType.TO)[0].toString());
     }
 
     /**
@@ -123,16 +141,13 @@ public class EmailDispatchImplIT {
      */
     @Test
     public void dispatchResolveUserUri() throws Exception {
-        String sender = "preparer@mail.local.domain";
-        String recipient = "emetsger@mail.local.domain";
-
         User recipientUser = new User();
-        recipientUser.setEmail(recipient);
+        recipientUser.setEmail(RECIPIENT);
         URI recipientUri = passClient.createResource(recipientUser);
 
         SimpleNotification n = new SimpleNotification();
         n.setType(SUBMISSION_APPROVAL_INVITE);
-        n.setSender(sender);
+        n.setSender(SENDER);
         n.setRecipient(Collections.singleton(recipientUri.toString()));
 
         String messageId = underTest.dispatch(n);
@@ -140,7 +155,7 @@ public class EmailDispatchImplIT {
         newMessageCondition(messageId, imapClient).await();
         Message message = getMessage(messageId, imapClient).call();
 
-        assertEquals(recipient, message.getRecipients(Message.RecipientType.TO)[0].toString());
+        assertEquals(RECIPIENT, message.getRecipients(Message.RecipientType.TO)[0].toString());
     }
 
     /**
@@ -170,8 +185,8 @@ public class EmailDispatchImplIT {
 
         SimpleNotification n = new SimpleNotification();
         n.setType(SUBMISSION_APPROVAL_INVITE);
-        n.setSender("preparer@mail.local.domain");
-        n.setRecipient(Collections.singleton("mailto:emetsger@mail.local.domain"));
+        n.setSender(SENDER);
+        n.setRecipient(Collections.singleton("mailto:" + RECIPIENT));
 
         String messageId = underTest.dispatch(n);
         assertNotNull(messageId);
@@ -219,16 +234,14 @@ public class EmailDispatchImplIT {
 
         SimpleNotification n = new SimpleNotification();
         n.setType(SUBMISSION_APPROVAL_INVITE);
-        String sender = "preparer@mail.local.domain";
-        n.setSender(sender);
-        String recipient = "emetsger@mail.local.domain";
-        n.setRecipient(Collections.singleton("mailto:" + recipient));
+        n.setSender(SENDER);
+        n.setRecipient(Collections.singleton("mailto:" + RECIPIENT));
         n.setParameters(new HashMap<Notification.Param, String>() {
             {
                 put(RESOURCE_METADATA, Composer.resourceMetadata(submission, objectMapper));
                 put(EVENT_METADATA, Composer.eventMetadata(event, objectMapper));
-                put(FROM, sender);
-                put(TO, recipient);
+                put(FROM, SENDER);
+                put(TO, RECIPIENT);
                 put(LINKS, asList(link).stream().collect(serialized()));
             }
         });
@@ -253,6 +266,41 @@ public class EmailDispatchImplIT {
         assertTrue(body.contains("Please review the submission at the following URL: " + link.getHref()));
     }
 
+    /**
+     * mailing a non-existent email address should result in the appropriate exception
+     * (in coordination with a like-minded email relay)
+     */
+    @Test
+    public void nonExistentEmailAddress() {
+        String nonExistentRecipientAddress = "moo-thru@bar.edu";
+        SimpleNotification n = new SimpleNotification();
+        n.setType(SUBMISSION_APPROVAL_INVITE);
+        n.setSender(SENDER);
+        n.setRecipient(Collections.singleton("mailto:" + nonExistentRecipientAddress));
+
+        try {
+            underTest.dispatch(n);
+        } catch (Exception e) {
+            assertTrue(e instanceof DispatchException);
+            Throwable rootCause = e.getCause();
+            boolean sfeFound = false;
+            while (rootCause.getCause() != null) {
+                if (rootCause instanceof javax.mail.SendFailedException) {
+                        sfeFound = true;
+                        break;
+                }
+                rootCause = rootCause.getCause();
+            }
+
+            assertTrue("Missing expected javax.mail.SendFailedException in the stack trace.", sfeFound);
+            assertTrue("Expected the string 'Invalid Addresses' to be in the exception message.", rootCause.getMessage().contains("Invalid Addresses"));
+
+            return;
+        }
+
+        fail("Expected a DispatchException to be thrown.");
+    }
+
     private static String packageAsPath() {
         return packageAsPath(EmailDispatchImplIT.class);
     }
@@ -262,7 +310,9 @@ public class EmailDispatchImplIT {
     }
 
     private static Condition<Message> newMessageCondition(String messageId, SimpleImapClient imapClient) {
-        return new Condition<>(getMessage(messageId, imapClient), Objects::nonNull, "New message");
+        Condition<Message> c = new Condition<>(getMessage(messageId, imapClient), Objects::nonNull, "New message");
+        c.setTimeoutThresholdMs(10000);
+        return c;
     }
 
     private static Callable<Message> getMessage(String messageId, SimpleImapClient imapClient) {
