@@ -13,26 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dataconservancy.pass.notification.app;
+package org.dataconservancy.pass.notification.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ErrorHandler;
+import org.dataconservancy.pass.notification.dispatch.impl.email.EmailDispatchImplIT;
 
 /**
- * Global error handler which logs unhandled exceptions.
- *
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
-@Component
-public class NotificationServiceErrorHandler implements ErrorHandler {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ErrorHandler.class);
-
-    @Override
-    public void handleError(Throwable throwable) {
-        LOG.error("Encountered an unrecoverable error: {}", throwable.getMessage(), throwable);
+public class PathUtil {
+    public static String packageAsPath() {
+        return packageAsPath(EmailDispatchImplIT.class);
     }
 
+    public static String packageAsPath(Class<?> clazz) {
+        return clazz.getPackage().getName().replace('.', '/');
+    }
 }

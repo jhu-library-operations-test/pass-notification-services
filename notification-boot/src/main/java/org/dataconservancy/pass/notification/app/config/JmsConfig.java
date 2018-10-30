@@ -18,7 +18,9 @@
 
 package org.dataconservancy.pass.notification.app.config;
 
+import org.dataconservancy.pass.notification.dispatch.DispatchException;
 import org.dataconservancy.pass.notification.impl.NotificationService;
+import org.dataconservancy.pass.notification.impl.NotificationServiceErrorHandler;
 import org.dataconservancy.pass.notification.model.config.Mode;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
 import org.dataconservancy.pass.support.messaging.constants.Constants;
@@ -70,7 +72,7 @@ public class JmsConfig {
                                                                           @Value("${spring.jms.listener.auto-startup}")
                                                                                   boolean autoStart,
                                                                           ConnectionFactory connectionFactory,
-                                                                          ErrorHandler errorHandler) {
+                                                                          NotificationServiceErrorHandler errorHandler) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
         factory.setErrorHandler(errorHandler);
@@ -87,8 +89,11 @@ public class JmsConfig {
                                          Message<String> message,
                                          javax.jms.Message jmsMessage) {
 
+        LOG.trace("Receiving message: {}", id);
+
         if (Mode.DISABLED == config.getMode()) {
             try {
+                LOG.trace("Discarding message {}, mode is {}", id, config.getMode());
                 jmsMessage.acknowledge();
             } catch (JMSException e) {
                 LOG.warn("Error acknowledging JMS message {}: {}", id, e.getMessage(), e);
@@ -96,25 +101,35 @@ public class JmsConfig {
             return;
         }
 
-        if (!resourceType.equals(Constants.PassType.SUBMISSION_EVENT_RESOURCE) ||
-                !eventType.equals(Constants.JmsFcrepoEvent.RESOURCE_CREATION)) {
+        if (!resourceType.contains(Constants.PassType.SUBMISSION_EVENT_RESOURCE) ||
+                !eventType.contains(Constants.JmsFcrepoEvent.RESOURCE_CREATION)) {
             try {
+                LOG.trace("Discarding message {}, resource type {}, event type {}", id,
+                        resourceType, eventType);
                 jmsMessage.acknowledge();
             } catch (JMSException e) {
                 LOG.warn("Error acknowledging JMS message {}: {}", id, e.getMessage(), e);
             }
             return;
         }
+
+        LOG.trace("Processing message {}, resource type {}, event type {}", id,
+                resourceType, eventType);
 
         String eventUri = jsonParser.parseId(message.getPayload().getBytes());
-        notificationService.notify(eventUri);
+
+        LOG.trace("Processing notification for {}", eventUri);
 
         try {
-            jmsMessage.acknowledge();
-        } catch (JMSException e) {
-            LOG.warn("Error acknowledging JMS message {}: {}", id, e.getMessage(), e);
+            notificationService.notify(eventUri);
+        } finally {
+            try {
+                // TODO maybe retry in the case of a transient email failure, otherwise we loose the message
+                jmsMessage.acknowledge();
+            } catch (JMSException e) {
+                LOG.warn("Error acknowledging JMS message {}: {}", id, e.getMessage(), e);
+            }
         }
-
     }
 
 }
