@@ -74,24 +74,27 @@ public class UserTokenGenerator {
         requireNonNull(submission, "Cannot create an invitation link for a null submission");
         requireNonNull(submission.getId(),
                 "Cannot create an invitation link for a submission with a null ID");
-        requireNonNull(submission.getSubmitter(),
-                format("Cannot create an invitation link, Submitter is null on %s", submission.getId()));
 
         return link -> {
             if (SUBMISSION_REVIEW_INVITE.equals(link.getRel())) {
 
+                requireNonNull(submission.getSubmitterEmail(),
+                        format("Cannot create an invitation link, submitter e-mail is null on %s", submission
+                                .getId()));
+
                 LOG.debug("Attaching user token for <{}> to link <{}>",
-                        submission.getSubmitter(),
+                        submission.getSubmitterEmail(),
                         link.getHref());
 
                 final Link inviteLink = new Link(
                         tokenFactory
                                 .forPassResource(submission.getId())
-                                .withReference(submission.getSubmitter())
+                                .withReference(submission.getSubmitterEmail())
                                 .addTo(link.getHref()),
                         link.getRel());
 
-                LOG.info("Generated invitation link <{}> for <{}>", inviteLink.getHref(), submission.getSubmitter());
+                LOG.info("Generated invitation link <{}> for <{}>", inviteLink.getHref(), submission
+                        .getSubmitterEmail());
 
                 return inviteLink;
             } else {

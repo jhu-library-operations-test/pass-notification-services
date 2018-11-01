@@ -61,7 +61,7 @@ public class UserTokenGeneratorTest {
 
     URI submissionUri = URI.create("http://example.org/test/submission");
 
-    URI submitterPlaceholder = URI.create("mailto:test");
+    URI submitterEmail = URI.create("mailto:test");
 
     URI emberLink = URI.create("http://example.org/test/emberLink");
 
@@ -74,10 +74,10 @@ public class UserTokenGeneratorTest {
     @Before
     public void setUp() {
         submission.setId(submissionUri);
-        submission.setSubmitter(submitterPlaceholder);
+        submission.setSubmitterEmail(submitterEmail);
 
         when(tokenFactory.forPassResource(eq(submissionUri))).thenReturn(tokenBuilder);
-        when(tokenBuilder.withReference(eq(submitterPlaceholder))).thenReturn(token);
+        when(tokenBuilder.withReference(eq(submitterEmail))).thenReturn(token);
         when(token.addTo(eq(emberLink))).thenReturn(emberLinkWithToken);
 
         toTest = new UserTokenGenerator(tokenFactory);
@@ -92,7 +92,7 @@ public class UserTokenGeneratorTest {
                 toTest.forSubmission(submission).apply(inviteLink));
 
         verify(tokenFactory, times(1)).forPassResource(eq(submissionUri));
-        verify(tokenBuilder, times(1)).withReference(eq(submitterPlaceholder));
+        verify(tokenBuilder, times(1)).withReference(eq(submitterEmail));
         verify(token, times(1)).addTo(eq(emberLink));
     }
 
@@ -114,10 +114,10 @@ public class UserTokenGeneratorTest {
         assertTrue(processedLinks.containsAll(links));
     }
 
-    // Throw an exception if the submitter is null
+    // Throw an exception if the submitter email is null
     @Test
-    public void noSubmitterTest() {
-        submission.setSubmitter(null);
+    public void noSubmitterEmailTest() {
+        submission.setSubmitterEmail(null);
 
         try {
             toTest.forSubmission(submission).apply(new Link(emberLink, SUBMISSION_REVIEW_INVITE));
@@ -166,6 +166,6 @@ public class UserTokenGeneratorTest {
         final Token decodedToken = decoder.fromUri(inviteWithUserToken.getHref());
 
         assertEquals(submission.getId(), decodedToken.getPassResource());
-        assertEquals(submission.getSubmitter(), decodedToken.getReference());
+        assertEquals(submission.getSubmitterEmail(), decodedToken.getReference());
     }
 }

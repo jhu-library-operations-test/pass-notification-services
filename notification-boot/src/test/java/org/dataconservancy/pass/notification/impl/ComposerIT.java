@@ -328,7 +328,16 @@ public class ComposerIT {
             submission.setId(URI.create(submissionId));
             submission.setPreparers(preparers.stream().map(URI::create).collect(Collectors.toList()));
             submission.setSubmitter(URI.create(submitter));
-
+            
+            if (SubmissionEvent.EventType.APPROVAL_REQUESTED_NEWUSER.equals(eventType)) {
+                
+                // TODO:  Add this in once the mechanism of new submitters has been changed
+                // from submitter URIs to submitter email+name
+                //submission.setSubmitter(null);
+                submission.setSubmitterEmail(URI.create("mailto:nobody@example.org"));
+                submission.setSubmitterName("moo!");
+            }
+            
             assertEquals(expectedMapping.get(eventType), composer.apply(submission, event).getType());
         });
     }
@@ -342,7 +351,11 @@ public class ComposerIT {
         String from = "mailto:preparer@mail.local.domain";
 
         Submission submission = new Submission();
+        
+        // TODO:  This needs to be null, once it is possible to do so.
         submission.setSubmitter(URI.create(to));
+        
+        submission.setSubmitterEmail(URI.create(to));
         URI preparerUri = URI.create(from);
         submission.setPreparers(singletonList(preparerUri));
         String metadata = resourceToString(join("/","", packageAsPath(), "submission-metadata.json"), forName("UTF-8"));
