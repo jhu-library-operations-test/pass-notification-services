@@ -501,7 +501,7 @@
                         <pushChanges>false</pushChanges>
                         <localCheckout>true</localCheckout>
                         <goals>deploy</goals>
-                        <releaseProfiles>release</releaseProfiles>
+                        <releaseProfiles>release,external</releaseProfiles>
                     </configuration>
                 </plugin>
 
