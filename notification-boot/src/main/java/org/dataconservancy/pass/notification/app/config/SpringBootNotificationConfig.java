@@ -29,6 +29,7 @@ import org.dataconservancy.pass.notification.dispatch.impl.email.EmailDispatchIm
 import org.dataconservancy.pass.notification.dispatch.impl.email.HandlebarsParameterizer;
 import org.dataconservancy.pass.notification.dispatch.impl.email.InlineTemplateResolver;
 import org.dataconservancy.pass.notification.dispatch.impl.email.Parameterizer;
+import org.dataconservancy.pass.notification.dispatch.impl.email.SimpleWhitelist;
 import org.dataconservancy.pass.notification.dispatch.impl.email.SpringUriTemplateResolver;
 import org.dataconservancy.pass.notification.dispatch.impl.email.TemplateParameterizer;
 import org.dataconservancy.pass.notification.dispatch.impl.email.TemplateResolver;
@@ -36,7 +37,6 @@ import org.dataconservancy.pass.notification.impl.Composer;
 import org.dataconservancy.pass.notification.impl.DefaultNotificationService;
 import org.dataconservancy.pass.notification.impl.LinkValidator;
 import org.dataconservancy.pass.notification.impl.RecipientAnalyzer;
-import org.dataconservancy.pass.notification.dispatch.impl.email.SimpleWhitelist;
 import org.dataconservancy.pass.notification.impl.SubmissionLinkAnalyzer;
 import org.dataconservancy.pass.notification.impl.UserTokenGenerator;
 import org.dataconservancy.pass.notification.model.config.Mode;
@@ -207,14 +207,19 @@ public class SpringBootNotificationConfig {
     public Mailer mailer(NotificationConfig config) {
         SmtpServerConfig smtpConfig = config.getSmtpConfig();
         Objects.requireNonNull(smtpConfig, "Missing SMTP server configuration from '" + notificationConfiguration + "'");
-        Mailer mailer = MailerBuilder
+        MailerBuilder.MailerRegularBuilder builder = MailerBuilder
                 .withSMTPServerHost(smtpConfig.getHost())
                 .withSMTPServerPort(Integer.parseInt(smtpConfig.getPort()))
                 .withTransportStrategy(TransportStrategy.valueOf(smtpConfig.getSmtpTransport().toUpperCase()))
-                .withDebugLogging(mailerDebug)
-                .buildMailer();
+                .withDebugLogging(mailerDebug);
 
-        return mailer;
+
+        if (smtpConfig.getSmtpUser() != null) {
+            builder = builder.withSMTPServerUsername(smtpConfig.getSmtpUser())
+                    .withSMTPServerPassword(smtpConfig.getSmtpPassword());
+        }
+
+        return builder.buildMailer();
     }
 
     @Bean
