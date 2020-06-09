@@ -21,26 +21,11 @@
     <parent>
       <groupId>org.dataconservancy.pass.notify</groupId>
       <artifactId>notify-parent</artifactId>
-      <version>0.0.3-3.2-SNAPSHOT</version>
+      <version>0.0.3-3.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>notification-integration</artifactId>
     <name>Notification Services Integration</name>
-
-    <profiles>
-        <profile>
-            <id>travis</id>
-            <activation>
-                <property>
-                    <name>env.TRAVIS</name>
-                </property>
-            </activation>
-            <properties>
-                <mail.waitms>30000</mail.waitms>
-                <ldap.waitms>15000</ldap.waitms>
-            </properties>
-        </profile>
-    </profiles>
 
     <build>
 

@@ -21,7 +21,7 @@
     <parent>
       <groupId>org.dataconservancy.pass.notify</groupId>
       <artifactId>notify-parent</artifactId>
-      <version>0.0.3-3.2-SNAPSHOT</version>
+      <version>0.0.3-3.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>notification-impl</artifactId>
@@ -80,6 +80,12 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dataconservancy.pass</groupId>
+            <artifactId>pass-json-adapter</artifactId>
             <scope>test</scope>
         </dependency>
 
