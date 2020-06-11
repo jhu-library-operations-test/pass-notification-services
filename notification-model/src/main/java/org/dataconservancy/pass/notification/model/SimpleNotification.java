@@ -19,6 +19,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * Encapsulates {@link Notification} metadata used to dispatch the notification.
@@ -43,6 +44,11 @@ public class SimpleNotification implements Notification {
     private Collection<String> cc;
 
     /**
+     * Additional recipients, must be RFC 822 email addresses.  URIs must not be used.
+     */
+    private Collection<String> bcc;
+
+    /**
      * The type of {@link Notification}
      */
     private Notification.Type type;
@@ -65,14 +71,16 @@ public class SimpleNotification implements Notification {
      */
     private URI resourceUri;
 
+    @Override
     public Collection<String> getRecipients() {
         return recipients;
     }
 
-    public void setRecipient(Collection<String> recipients) {
+    public void setRecipients(Collection<String> recipients) {
         this.recipients = recipients;
     }
 
+    @Override
     public Collection<String> getCc() {
         return cc;
     }
@@ -81,6 +89,16 @@ public class SimpleNotification implements Notification {
         this.cc = cc;
     }
 
+    @Override
+    public Collection<String> getBcc() {
+        return bcc;
+    }
+
+    public void setBcc(Collection<String> bcc) {
+        this.bcc = bcc;
+    }
+
+    @Override
     public Type getType() {
         return type;
     }
@@ -89,6 +107,7 @@ public class SimpleNotification implements Notification {
         this.type = type;
     }
 
+    @Override
     public Map<Param, String> getParameters() {
         return parameters;
     }
@@ -97,6 +116,7 @@ public class SimpleNotification implements Notification {
         this.parameters = parameters;
     }
 
+    @Override
     public URI getEventUri() {
         return eventUri;
     }
@@ -105,6 +125,7 @@ public class SimpleNotification implements Notification {
         this.eventUri = eventUri;
     }
 
+    @Override
     public URI getResourceUri() {
         return resourceUri;
     }
@@ -113,12 +134,27 @@ public class SimpleNotification implements Notification {
         this.resourceUri = resourceUri;
     }
 
+    @Override
     public String getSender() {
         return sender;
     }
 
     public void setSender(String sender) {
         this.sender = sender;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner("\n  ", SimpleNotification.class.getSimpleName() + "[", "]")
+                .add("recipients=" + recipients)
+                .add("sender='" + sender + "'")
+                .add("cc=" + cc)
+                .add("bcc=" + bcc)
+                .add("type=" + type)
+                .add("parameters=" + parameters)
+                .add("eventUri=" + eventUri)
+                .add("resourceUri=" + resourceUri)
+                .toString();
     }
 
     @Override
@@ -131,6 +167,7 @@ public class SimpleNotification implements Notification {
         return Objects.equals(recipients, that.recipients) &&
                 Objects.equals(sender, that.sender) &&
                 Objects.equals(cc, that.cc) &&
+                Objects.equals(bcc, that.bcc) &&
                 type == that.type &&
                 Objects.equals(parameters, that.parameters) &&
                 Objects.equals(eventUri, that.eventUri) &&
@@ -139,20 +176,6 @@ public class SimpleNotification implements Notification {
 
     @Override
     public int hashCode() {
-        return Objects.hash(recipients, sender, cc, type, parameters, eventUri, resourceUri);
+        return Objects.hash(recipients, sender, cc, bcc, type, parameters, eventUri, resourceUri);
     }
-
-    @Override
-    public String toString() {
-        return "SimpleNotification{" +
-                "recipients=" + recipients +
-                ", sender='" + sender + '\'' +
-                ", cc=" + cc +
-                ", type=" + type +
-                ", parameters=" + parameters +
-                ", eventUri=" + eventUri +
-                ", resourceUri=" + resourceUri +
-                '}';
-    }
-
 }
