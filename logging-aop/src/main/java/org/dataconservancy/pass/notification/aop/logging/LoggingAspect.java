@@ -53,8 +53,8 @@ public class LoggingAspect {
 
         Notification n = (Notification) args[0];
 
-        NOTIFICATION_LOG.debug("Dispatching notification to [{}], cc [{}] bcc [{}] (Notification type: {}, Event URI:" +
-                               "{}, Resource URI: {})",
+        NOTIFICATION_LOG.debug("Dispatching notification to [{}], cc [{}] bcc [{}] (Notification type: {}, Event " +
+                               "URI: {}, Resource URI: {})",
                 join(",", ofNullable(n.getRecipients()).orElseGet(Collections::emptyList)),
                 join(",", ofNullable(n.getCc()).orElseGet(Collections::emptyList)),
                 join(",", ofNullable(n.getBcc()).orElseGet(Collections::emptyList)),
@@ -73,7 +73,7 @@ public class LoggingAspect {
         Notification n = (Notification) args[0];
 
         NOTIFICATION_LOG.info(
-            "Successfully dispatched notification with id {} to [{}], cc [{}] bcc [{}] (Notification type: {}," +
+            "Successfully dispatched notification with id {} to [{}], cc [{}] bcc [{}] (Notification type: {}, " +
                 "Event URI: {}, Resource URI: {})",
             id,
             join(",", ofNullable(n.getRecipients()).orElseGet(Collections::emptyList)),
@@ -91,7 +91,7 @@ public class LoggingAspect {
 
         if (ex instanceof DispatchException && (n = ((DispatchException) ex).getNotification()) != null) {
             NOTIFICATION_LOG.warn(
-                "FAILED dispatching notification to [{}], cc [{}] bcc [{}] (Notification type: {}, Event URI: {}," +
+                "FAILED dispatching notification to [{}], cc [{}] bcc [{}] (Notification type: {}, Event URI: {}, " +
                     "Resource URI: {})",
                 join(",", ofNullable(n.getRecipients()).orElseGet(Collections::emptyList)),
                 join(",", ofNullable(n.getCc()).orElseGet(Collections::emptyList)),

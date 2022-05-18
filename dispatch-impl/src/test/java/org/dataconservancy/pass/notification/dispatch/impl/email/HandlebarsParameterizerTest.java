@@ -42,8 +42,8 @@ public class HandlebarsParameterizerTest {
     private static final String BODY_TEMPLATE = "" +
             "Dear {{to}},\n" +
             "\n" +
-            "A submission titled \"{{#resource_metadata}}{{title}}{{/resource_metadata}}\" been prepared on your" +
-            "behalf by {{from}} {{#event_metadata}}{{#if comment}}with comment \"{{comment}}\"{{else}}.{{/if}}" +
+            "A submission titled \"{{#resource_metadata}}{{title}}{{/resource_metadata}}\" been prepared on your " +
+            "behalf by {{from}} {{#event_metadata}}{{#if comment}}with comment \"{{comment}}\"{{else}}.{{/if}} " +
             "{{/event_metadata}}\n" +
             "\n" +
             "Please review the submission at the following URL:\n" +
