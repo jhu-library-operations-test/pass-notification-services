@@ -47,7 +47,8 @@ public class DispatchException extends RuntimeException {
         this.notification = notification;
     }
 
-    public DispatchException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace, Notification notification) {
+    public DispatchException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace,
+                             Notification notification) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.notification = notification;
     }

@@ -15,6 +15,20 @@
  */
 package org.dataconservancy.pass.notification.impl;
 
+import static java.lang.String.join;
+import static org.dataconservancy.pass.notification.impl.Composer.RecipientConfigFilter.modeFilter;
+import static org.dataconservancy.pass.notification.impl.Links.concat;
+import static org.dataconservancy.pass.notification.impl.Links.serialized;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -27,20 +41,6 @@ import org.dataconservancy.pass.notification.model.config.RecipientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
-
-import static java.lang.String.join;
-import static org.dataconservancy.pass.notification.impl.Composer.RecipientConfigFilter.modeFilter;
-import static org.dataconservancy.pass.notification.impl.Links.concat;
-import static org.dataconservancy.pass.notification.impl.Links.serialized;
 
 /**
  * Composes a {@link Notification} from a {@link SubmissionEvent} and its corresponding {@link Submission}, according
@@ -67,9 +67,9 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
     private RecipientConfig recipientConfig;
 
     private RecipientAnalyzer recipientAnalyzer;
-    
+
     private SubmissionLinkAnalyzer submissionLinkAnalyzer;
-    
+
     private LinkValidator linkValidator;
 
     private ObjectMapper mapper;
@@ -105,7 +105,7 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
         Objects.requireNonNull(event, "Event must not be null.");
 
         if (!event.getSubmission().equals(submission.getId())) {
-            // TODO: exception?
+            // todo: exception?
             LOG.warn("Composing a Notification for tuple [{},{}] but {} references a different Submission: {}.",
                     submission.getId(), event.getId(), event.getId(), event.getSubmission());
         }
@@ -139,7 +139,7 @@ public class Composer implements BiFunction<Submission, SubmissionEvent, Notific
         Collection<String> recipients = recipientAnalyzer.apply(submission, event);
         notification.setRecipients(recipients);
         params.put(Notification.Param.TO, join(",", recipients));
-        
+
         params.put(Notification.Param.LINKS, concat(submissionLinkAnalyzer.apply(submission, event))
                 .filter(linkValidator)
                 .collect(serialized()));

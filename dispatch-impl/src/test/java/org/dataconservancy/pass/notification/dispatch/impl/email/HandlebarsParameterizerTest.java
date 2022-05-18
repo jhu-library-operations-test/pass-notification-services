@@ -18,6 +18,14 @@
 
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.EscapingStrategy;
 import com.github.jknack.handlebars.Handlebars;
@@ -29,25 +37,20 @@ import org.dataconservancy.pass.notification.model.config.template.NotificationT
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class HandlebarsParameterizerTest {
 
     private static final String BODY_TEMPLATE = "" +
             "Dear {{to}},\n" +
             "\n" +
-            "A submission titled \"{{#resource_metadata}}{{title}}{{/resource_metadata}}\" been prepared on your behalf by {{from}} {{#event_metadata}}{{#if comment}}with comment \"{{comment}}\"{{else}}.{{/if}}{{/event_metadata}}\n" +
+            "A submission titled \"{{#resource_metadata}}{{title}}{{/resource_metadata}}\" been prepared on your" +
+            "behalf by {{from}} {{#event_metadata}}{{#if comment}}with comment \"{{comment}}\"{{else}}.{{/if}}" +
+            "{{/event_metadata}}\n" +
             "\n" +
             "Please review the submission at the following URL:\n" +
             "{{#each link_metadata}}{{#eq rel \"submissionReview\"}}{{href}}{{else}}{{/eq}}{{/each}}";
 
-    private static final String SUBJECT_TEMPLATE = "PASS Submission titled \"{{#resource_metadata}}{{title}}{{/resource_metadata}}\" awaiting your approval";
+    private static final String SUBJECT_TEMPLATE = "PASS Submission titled \"{{#resource_metadata}}{{title}}" +
+                                                   "{{/resource_metadata}}\" awaiting your approval";
 
     private static final String COMMENT_STRING = "How does this look?";
 
@@ -99,7 +102,8 @@ public class HandlebarsParameterizerTest {
 
     @Test
     public void simpleParameterization() throws IOException {
-        String parameterized = underTest.parameterize(Name.BODY, paramMap, new ByteArrayInputStream(BODY_TEMPLATE.getBytes()));
+        String parameterized = underTest.parameterize(Name.BODY, paramMap,
+                                                      new ByteArrayInputStream(BODY_TEMPLATE.getBytes()));
 
         assertTrue(parameterized.contains(TO));
         assertTrue(parameterized.contains(FROM));
@@ -112,9 +116,10 @@ public class HandlebarsParameterizerTest {
     public void urlEncoding() throws IOException {
         String href = "http://example.org?queryParam=value";
         HashMap<Param, String> paramMap = new HashMap<Param, String>() {{
-            put(Param.TO, href);
-        }};
-        String parameterized = underTest.parameterize(Name.BODY, paramMap, IOUtils.toInputStream("{{to}}", "UTF-8"));
+                    put(Param.TO, href);
+                }};
+        String parameterized = underTest.parameterize(Name.BODY, paramMap,
+                                                      IOUtils.toInputStream("{{to}}", "UTF-8"));
 
         assertEquals(href, parameterized);
     }

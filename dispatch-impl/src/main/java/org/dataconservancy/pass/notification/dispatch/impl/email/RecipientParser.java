@@ -18,14 +18,17 @@
 
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.model.User;
-
 import java.net.URI;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.model.User;
+
 class RecipientParser {
+
+    private RecipientParser() {
+    }
 
     static Collection<String> parseRecipientUris(Collection<URI> recipientUris, PassClient passClient) {
         return recipientUris.stream().map(recipientUri -> {

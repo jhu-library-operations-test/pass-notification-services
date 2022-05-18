@@ -15,13 +15,13 @@
  */
 package org.dataconservancy.pass.notification.model.config.template;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.dataconservancy.pass.notification.model.Notification;
-import org.dataconservancy.pass.notification.model.config.NotificationConfig;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.dataconservancy.pass.notification.model.Notification;
+import org.dataconservancy.pass.notification.model.config.NotificationConfig;
 
 /**
  * Allows for the customization of notification subject, body, and footer for each notification type.  Each notification
@@ -36,7 +36,8 @@ import java.util.Objects;
  *                                       .stream()
  *                                       .filter(t -&gt; t.getNotificationType() == SUBMISSION_APPROVAL_REQUESTED)
  *                                       .findAny()
- *                                       .orElseThrow(() -&gt; new RuntimeException("Missing template for " + SUBMISSION_APPROVAL_REQUESTED));
+ *                                       .orElseThrow(() -&gt; new RuntimeException("Missing template for " +
+ *                                       SUBMISSION_APPROVAL_REQUESTED));
  *
  * String subjectTemplate = approvalRequestedTemplate.getTemplates().get(SUBJECT);
  * // subjectTemplate can be an inline value:
@@ -48,7 +49,8 @@ import java.util.Objects;
  * References must be specified as Spring Resource URIs.
  * </p>
  *
- * @see <a href="https://docs.spring.io/spring/docs/5.1.1.RELEASE/spring-framework-reference/core.html#resources">Spring Resources</a>
+ * @see <a href="https://docs.spring.io/spring/docs/5.1.1.RELEASE/spring-framework-reference/core.html#resources">
+ *     Spring Resources</a>
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class NotificationTemplate {
@@ -126,10 +128,12 @@ public class NotificationTemplate {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         NotificationTemplate that = (NotificationTemplate) o;
         return Objects.equals(templates, that.templates) &&
                 notificationType == that.notificationType;

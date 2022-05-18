@@ -18,18 +18,18 @@
 
 package org.dataconservancy.pass.notification.impl;
 
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.SubmissionEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toSet;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
-import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toSet;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.SubmissionEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Examines the {@link Submission} and {@link SubmissionEvent}, and determines who should receive the notification.
@@ -44,8 +44,7 @@ public class RecipientAnalyzer implements BiFunction<Submission, SubmissionEvent
     public Collection<String> apply(Submission submission, SubmissionEvent event) {
         switch (event.getEventType()) {
             case APPROVAL_REQUESTED_NEWUSER:
-            case APPROVAL_REQUESTED:
-            {
+            case APPROVAL_REQUESTED: {
                 // to: authorized submitter
                 String submitterUriOrEmail = submitterUri(submission)
                         .orElseGet(() -> submitterEmail(submission)
@@ -56,8 +55,7 @@ public class RecipientAnalyzer implements BiFunction<Submission, SubmissionEvent
             }
 
             case CHANGES_REQUESTED:
-            case SUBMITTED:
-            {
+            case SUBMITTED: {
                 // to: submission.preparers
                 return submission.getPreparers().stream().map(URI::toString).collect(toSet());
             }

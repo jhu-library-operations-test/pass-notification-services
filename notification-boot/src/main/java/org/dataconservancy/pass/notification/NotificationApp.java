@@ -15,6 +15,15 @@
  */
 package org.dataconservancy.pass.notification;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.commons.lang3.StringUtils;
 import org.dataconservancy.pass.notification.app.config.JmsConfig;
 import org.dataconservancy.pass.notification.app.config.SpringBootNotificationConfig;
@@ -28,15 +37,6 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 /**
  * Spring Boot entry point for launching Notification Services.
  *
@@ -47,6 +47,9 @@ import java.util.Properties;
 @ComponentScan("org.dataconservancy.pass")
 @EnableAspectJAutoProxy
 public class NotificationApp {
+
+    private NotificationApp() {
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(NotificationApp.class);
 
@@ -97,13 +100,16 @@ public class NotificationApp {
                     boolean isDirty = Boolean.valueOf(gitProperties.getProperty(GIT_DIRTY_FLAG));
 
                     LOG.info(">>>> Starting Notification Services (version: {} branch: {} commit: {} commit date: {})",
-                            gitProperties.get(GIT_BUILD_VERSION_KEY), gitProperties.get(GIT_BRANCH), gitProperties.get(GIT_COMMIT_HASH_KEY), gitProperties.getProperty(GIT_COMMIT_TIME_KEY));
+                             gitProperties.get(GIT_BUILD_VERSION_KEY), gitProperties.get(GIT_BRANCH),
+                             gitProperties.get(GIT_COMMIT_HASH_KEY), gitProperties.getProperty(GIT_COMMIT_TIME_KEY));
 
                     if (isDirty) {
-                        LOG.warn(">>>> ** Notification Services was compiled from a Git repository with uncommitted changes! **");
+                        LOG.warn(">>>> ** Notification Services was compiled from a Git repository with uncommitted" +
+                                 "changes! **");
                     }
                 } catch (IOException e) {
-                    LOG.warn(">>>> Error parsing Notification Services git information (" + GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " + e.getMessage() + ")");
+                    LOG.warn(">>>> Error parsing Notification Services git information (" +
+                             GIT_PROPERTIES_RESOURCE_PATH + " could not be parsed: " + e.getMessage() + ")");
                 }
             }
 

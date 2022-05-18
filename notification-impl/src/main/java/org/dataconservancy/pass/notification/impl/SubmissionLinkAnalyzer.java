@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
 import org.dataconservancy.pass.notification.model.Link;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,31 +72,30 @@ public class SubmissionLinkAnalyzer implements BiFunction<Submission, Submission
         }
 
         switch (event.getEventType()) {
-
-        case APPROVAL_REQUESTED_NEWUSER:
-            return required(format("Invalid submissionEvent %s", event.getId()),
+            case APPROVAL_REQUESTED_NEWUSER:
+                return required(format("Invalid submissionEvent %s", event.getId()),
+                                event.getLink(),
+                                SUBMISSION_REVIEW_INVITE)
+                    .map(tokenGenerator.forSubmission(submission));
+            case APPROVAL_REQUESTED:
+                return required(
+                    format("Invalid submissionEvent %s", event.getId()),
                     event.getLink(),
-                    SUBMISSION_REVIEW_INVITE)
-                            .map(tokenGenerator.forSubmission(submission));
-
-        case APPROVAL_REQUESTED:
-            return required(format("Invalid submissionEvent %s", event.getId()), event.getLink(), SUBMISSION_REVIEW);
-
-        case CHANGES_REQUESTED:
-            return required(format("Invalid submissionEvent %s", event.getId()), event.getLink(), SUBMISSION_REVIEW);
-
-        case SUBMITTED:
-            return optional(event.getLink(), SUBMISSION_VIEW);
-
-        case CANCELLED:
-            return optional(event.getLink(), SUBMISSION_VIEW);
-
-        default:
-
-            // If there is a link, but an unknown submission type, then just blindly pass
-            // along the link.
-            LOG.warn("Encountered unknown submission event type {}", event.getEventType());
-            return optional(event.getLink(), SUBMISSION_VIEW);
+                    SUBMISSION_REVIEW);
+            case CHANGES_REQUESTED:
+                return required(
+                    format("Invalid submissionEvent %s", event.getId()),
+                    event.getLink(),
+                    SUBMISSION_REVIEW);
+            case SUBMITTED:
+                return optional(event.getLink(), SUBMISSION_VIEW);
+            case CANCELLED:
+                return optional(event.getLink(), SUBMISSION_VIEW);
+            default:
+                // If there is a link, but an unknown submission type, then just blindly pass
+                // along the link.
+                LOG.warn("Encountered unknown submission event type {}", event.getEventType());
+                return optional(event.getLink(), SUBMISSION_VIEW);
         }
     }
 }

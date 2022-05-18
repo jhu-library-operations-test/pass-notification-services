@@ -15,17 +15,7 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.model.User;
-import org.dataconservancy.pass.notification.dispatch.DispatchException;
-import org.dataconservancy.pass.notification.model.Notification;
-import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
-import org.simplejavamail.email.Email;
-import org.simplejavamail.email.EmailBuilder;
-import org.simplejavamail.email.EmailPopulatingBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import static java.lang.String.join;
 
 import java.net.URI;
 import java.util.Collection;
@@ -37,7 +27,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.lang.String.join;
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.model.User;
+import org.dataconservancy.pass.notification.dispatch.DispatchException;
+import org.dataconservancy.pass.notification.model.Notification;
+import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
+import org.simplejavamail.email.Email;
+import org.simplejavamail.email.EmailBuilder;
+import org.simplejavamail.email.EmailPopulatingBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -72,8 +72,8 @@ public class EmailComposer {
         Set<URI> recipientUris = n.getRecipients()
                 .stream().map(URI::create).collect(Collectors.toSet());
 
-
-        LOG.debug("Initial recipients: [{}]", join(",", recipientUris.stream().map(URI::toString).collect(Collectors.toSet())));
+        LOG.debug("Initial recipients: [{}]", join(",",
+                   recipientUris.stream().map(URI::toString).collect(Collectors.toSet())));
 
         Collection<String> resolvedRecipients = recipientUris
                 .stream()

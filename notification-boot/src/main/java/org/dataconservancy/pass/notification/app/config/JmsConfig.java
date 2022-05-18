@@ -18,7 +18,10 @@
 
 package org.dataconservancy.pass.notification.app.config;
 
-import org.dataconservancy.pass.notification.dispatch.DispatchException;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Session;
+
 import org.dataconservancy.pass.notification.impl.NotificationService;
 import org.dataconservancy.pass.notification.impl.NotificationServiceErrorHandler;
 import org.dataconservancy.pass.notification.model.config.Mode;
@@ -36,11 +39,6 @@ import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.support.JmsHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.util.ErrorHandler;
-
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Session;
 
 /**
  * JMS configuration for Notification Services.  Primary entry point to the Notification Services stack when in
@@ -67,12 +65,13 @@ public class JmsConfig {
     private NotificationConfig config;
 
     @Bean
-    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(@Value("${spring.jms.listener.concurrency}")
-                                                                                  String concurrency,
-                                                                          @Value("${spring.jms.listener.auto-startup}")
-                                                                                  boolean autoStart,
-                                                                          ConnectionFactory connectionFactory,
-                                                                          NotificationServiceErrorHandler errorHandler) {
+    public DefaultJmsListenerContainerFactory jmsListenerContainerFactory(
+            @Value("${spring.jms.listener.concurrency}")
+            String concurrency,
+            @Value("${spring.jms.listener.auto-startup}")
+            boolean autoStart,
+            ConnectionFactory connectionFactory,
+            NotificationServiceErrorHandler errorHandler) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setSessionAcknowledgeMode(Session.CLIENT_ACKNOWLEDGE);
         factory.setErrorHandler(errorHandler);
@@ -82,7 +81,8 @@ public class JmsConfig {
         return factory;
     }
 
-    @JmsListener(destination = "${pass.notification.queue.event.name}", containerFactory = "jmsListenerContainerFactory")
+    @JmsListener(destination = "${pass.notification.queue.event.name}", containerFactory =
+        "jmsListenerContainerFactory")
     public void processMessage(@Header(Constants.JmsFcrepoHeader.FCREPO_RESOURCE_TYPE) String resourceType,
                                          @Header(Constants.JmsFcrepoHeader.FCREPO_EVENT_TYPE) String eventType,
                                          @Header(JmsHeaders.MESSAGE_ID) String id,
@@ -124,7 +124,7 @@ public class JmsConfig {
             notificationService.notify(eventUri);
         } finally {
             try {
-                // TODO maybe retry in the case of a transient email failure, otherwise we loose the message
+                // todo: maybe retry in the case of a transient email failure, otherwise we loose the message
                 jmsMessage.acknowledge();
             } catch (JMSException e) {
                 LOG.warn("Error acknowledging JMS message {}: {}", id, e.getMessage(), e);

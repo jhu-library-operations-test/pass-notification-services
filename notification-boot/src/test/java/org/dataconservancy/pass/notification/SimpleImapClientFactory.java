@@ -15,6 +15,9 @@
  */
 package org.dataconservancy.pass.notification;
 
+import javax.mail.MessagingException;
+import javax.mail.Session;
+
 import com.sun.mail.imap.IMAPStore;
 import org.dataconservancy.pass.notification.util.mail.SimpleImapClient;
 import org.slf4j.Logger;
@@ -23,9 +26,6 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-
-import javax.mail.MessagingException;
-import javax.mail.Session;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

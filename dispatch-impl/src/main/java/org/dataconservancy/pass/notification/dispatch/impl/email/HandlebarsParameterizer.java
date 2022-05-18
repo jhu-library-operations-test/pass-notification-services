@@ -15,6 +15,12 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
@@ -23,12 +29,6 @@ import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Parameterizes Mustache templates using Handlebars.
@@ -75,6 +75,7 @@ public class HandlebarsParameterizer implements TemplateParameterizer {
                                     } catch (IOException e) {
                                         throw new RuntimeException(e.getMessage(), e);
                                     }
+                                default:
                             }
 
                             return entry.getValue();

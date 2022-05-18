@@ -37,7 +37,6 @@ import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.notification.model.Link;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
 import org.dataconservancy.pass.notification.model.config.UserTokenGeneratorConfig;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

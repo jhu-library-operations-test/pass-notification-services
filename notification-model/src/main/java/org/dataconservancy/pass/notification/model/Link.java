@@ -59,10 +59,12 @@ public class Link {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         Link link1 = (Link) o;
         return Objects.equals(rel, link1.rel) &&
                 Objects.equals(href, link1.href);
@@ -80,19 +82,18 @@ public class Link {
                 ", href='" + href + '\'' +
                 '}';
     }
-    
-    
+
     public interface Rels {
-        
+
         /** 
          * Link to view a submission.
          * <p>
-         * This is used to link to a Submission in the UI, without an 
+         * This is used to link to a Submission in the UI, without an
          * expectation that any action needs to be taken.
          * </p>
          */
         public static final String SUBMISSION_VIEW = "submission-view";
-        
+
         /** 
          * Link to Review a submission.
          * <p>
@@ -101,12 +102,12 @@ public class Link {
          * </p>
          */
         public static final String SUBMISSION_REVIEW = "submission-review";
-        
+
         /**
          * Link which invites a new user to review a submission.
          */
         public static final String SUBMISSION_REVIEW_INVITE = "submission-review-invite";
-        
+
     }
 
 }

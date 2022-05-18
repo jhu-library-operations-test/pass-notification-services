@@ -15,13 +15,13 @@
  */
 package org.dataconservancy.pass.notification;
 
-import javax.mail.Session;
-import java.util.Properties;
-
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.getProperty;
 import static java.lang.System.getenv;
+
+import java.util.Properties;
+import javax.mail.Session;
 
 /**
  * Utility class to support and encapsulate the creation of Java messaging objects.  It is meant to be used when

@@ -18,13 +18,13 @@
 
 package org.dataconservancy.pass.notification.model.config;
 
-import org.junit.Test;
-
-import java.io.IOException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
+import org.junit.Test;
 
 public class RecipientConfigTest extends AbstractJacksonMappingTest {
 

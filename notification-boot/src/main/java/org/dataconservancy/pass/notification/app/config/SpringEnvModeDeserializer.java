@@ -15,14 +15,14 @@
  */
 package org.dataconservancy.pass.notification.app.config;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.dataconservancy.pass.notification.model.config.Mode;
 import org.springframework.core.env.Environment;
-
-import java.io.IOException;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

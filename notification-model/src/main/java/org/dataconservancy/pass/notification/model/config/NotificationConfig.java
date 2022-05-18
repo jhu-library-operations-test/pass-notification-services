@@ -15,21 +15,24 @@
  */
 package org.dataconservancy.pass.notification.model.config;
 
+import java.util.Collection;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.dataconservancy.pass.notification.model.config.smtp.SmtpServerConfig;
 import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
 
-import java.util.Collection;
-import java.util.Objects;
-
 /**
  * The Notification Services runtime configuration.
  * <p>
- * The configuration is parsed from a JSON resource identified by the environment variable or system property {@code pass.notification.configuration}.  The resource must be identified as a Spring Resource URI (e.g. {@code classpath:/notification.json}, {@code file:///notification.json}).
+ * The configuration is parsed from a JSON resource identified by the environment variable or system property
+ * {@code pass.notification.configuration}.  The resource must be identified as a Spring Resource URI (e.g.
+ * {@code classpath:/notification.json}, {@code file:///notification.json}).
  * </p>
  *
- * @see <a href="https://docs.spring.io/spring/docs/5.1.1.RELEASE/spring-framework-reference/core.html#resources">Spring Resources</a>
+ * @see <a href="https://docs.spring.io/spring/docs/5.1.1.RELEASE/spring-framework-reference/core.html#resources">
+ *     Spring Resources</a>
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class NotificationConfig {
@@ -55,20 +58,22 @@ public class NotificationConfig {
      */
     @JsonProperty("smtp")
     private SmtpServerConfig smtpConfig;
-    
+
     /** 
      * User invitation token encryption key.
      */
     @JsonProperty("user-token-generator")
     private UserTokenGeneratorConfig tokenConfig;
-    
+
     @JsonProperty("link-validators")
     private Collection<LinkValidationRule> linkValidatorConfig;
 
     /**
-     * The runtime mode of Notification Services.  Portions of the configuration may be differentiated by mode, for example, there can be a {@link RecipientConfig} per {@link Mode}.
+     * The runtime mode of Notification Services.  Portions of the configuration may be differentiated by mode,
+     * for example, there can be a {@link RecipientConfig} per {@link Mode}.
      * <p>
-     * The mode may be set in the configuration file, or set with an environment or system property variable named {@code pass.notification.mode}.
+     * The mode may be set in the configuration file, or set with an environment or system property variable named
+     * {@code pass.notification.mode}.
      * </p>
      *
      * @return the runtime mode of Notification Services
@@ -108,7 +113,8 @@ public class NotificationConfig {
     }
 
     /**
-     * The settings used to send email notifications using SMTP.  Unlike other portions of this configuration, it is <em>not</em> a function of {@link #getMode() the runtime mode}.
+     * The settings used to send email notifications using SMTP.  Unlike other portions of this configuration, it is
+     * <em>not</em> a function of {@link #getMode() the runtime mode}.
      *
      * @return the global SMTP server configuration
      */
@@ -119,29 +125,31 @@ public class NotificationConfig {
     public void setSmtpConfig(SmtpServerConfig smtpConfig) {
         this.smtpConfig = smtpConfig;
     }
-    
+
     public UserTokenGeneratorConfig getUserTokenGeneratorConfig() {
         return tokenConfig;
     }
-    
+
     public void setUserTokenGeneratorConfig(UserTokenGeneratorConfig config) {
         this.tokenConfig = config;
     }
-    
+
     public Collection<LinkValidationRule> getLinkValidatorConfigs() {
         return linkValidatorConfig;
     }
-    
+
     public void setLinkValidationRules(Collection<LinkValidationRule> configs) {
         this.linkValidatorConfig = configs;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         NotificationConfig that = (NotificationConfig) o;
         return Objects.equals(mode, that.mode) &&
                 Objects.equals(templates, that.templates) &&

@@ -15,11 +15,11 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.notification.model.Notification;
-import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
-
 import java.io.InputStream;
 import java.util.Map;
+
+import org.dataconservancy.pass.notification.model.Notification;
+import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
 
 /**
  * Parameterizes a named template containing placeholders, using a {@code Map} of key-value pairs.  Supported

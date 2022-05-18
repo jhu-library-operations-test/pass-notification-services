@@ -15,9 +15,9 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
-
 import java.io.InputStream;
+
+import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
 
 /**
  * Resolves the named template, interpreting the template string as either a locator (i.e. URI) or an inline template.

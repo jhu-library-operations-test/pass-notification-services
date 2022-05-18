@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.dataconservancy.pass.notification.model.Link;
-
 import org.junit.Test;
 
 /**

@@ -15,11 +15,11 @@
  */
 package org.dataconservancy.pass.notification.model.config;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Collection;
 import java.util.Objects;
 import java.util.StringJoiner;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Allows recipients of a notification to be configured depending on the Notification Service {@link #mode mode}.
@@ -167,10 +167,12 @@ public class RecipientConfig {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         RecipientConfig that = (RecipientConfig) o;
         return mode == that.mode &&
                 Objects.equals(globalCc, that.globalCc) &&

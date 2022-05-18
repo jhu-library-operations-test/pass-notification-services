@@ -15,6 +15,8 @@
  */
 package org.dataconservancy.pass.notification.impl;
 
+import java.net.URI;
+
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
@@ -23,12 +25,6 @@ import org.dataconservancy.pass.notification.model.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.net.URI;
-import java.util.Collections;
-
-import static java.lang.String.join;
-import static java.util.Optional.ofNullable;
 
 /**
  * Default implementation of {@link NotificationService} which processes {@link SubmissionEvent}s relating to proxy
@@ -76,9 +72,11 @@ public class DefaultNotificationService implements NotificationService {
             return;
         }
 
-        // TODO abstract into a policy of some kind
+        // todo: abstract into a policy of some kind
         if ((submission.getPreparers() == null || submission.getPreparers().isEmpty()) ||
-                (submission.getPreparers().contains(submission.getSubmitter()) && submission.getPreparers().size() == 1)) {
+                (submission.getPreparers().contains(
+                    submission.getSubmitter()) && submission.getPreparers().size() == 1)
+        ) {
             // then we are not dealing with proxy submission, we're dealing with self-submission.
             // in the case of self-submission, notifications are not produced, so short-circuit here
             LOG.debug("Dropping self-submission SubmissionEvent (Event URI: {}, Resource URI: {})",

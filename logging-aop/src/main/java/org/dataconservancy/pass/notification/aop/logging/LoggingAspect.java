@@ -15,8 +15,12 @@
  */
 package org.dataconservancy.pass.notification.aop.logging;
 
+import static java.lang.String.join;
+import static java.util.Optional.ofNullable;
+
+import java.util.Collections;
+
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
@@ -27,12 +31,6 @@ import org.dataconservancy.pass.notification.model.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.Optional;
-
-import static java.lang.String.join;
-import static java.util.Optional.ofNullable;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -55,7 +53,8 @@ public class LoggingAspect {
 
         Notification n = (Notification) args[0];
 
-        NOTIFICATION_LOG.debug("Dispatching notification to [{}], cc [{}] bcc [{}] (Notification type: {}, Event URI: {}, Resource URI: {})",
+        NOTIFICATION_LOG.debug("Dispatching notification to [{}], cc [{}] bcc [{}] (Notification type: {}, Event URI:" +
+                               "{}, Resource URI: {})",
                 join(",", ofNullable(n.getRecipients()).orElseGet(Collections::emptyList)),
                 join(",", ofNullable(n.getCc()).orElseGet(Collections::emptyList)),
                 join(",", ofNullable(n.getBcc()).orElseGet(Collections::emptyList)),
@@ -73,14 +72,16 @@ public class LoggingAspect {
 
         Notification n = (Notification) args[0];
 
-        NOTIFICATION_LOG.info("Successfully dispatched notification with id {} to [{}], cc [{}] bcc [{}] (Notification type: {}, Event URI: {}, Resource URI: {})",
-                id,
-                join(",", ofNullable(n.getRecipients()).orElseGet(Collections::emptyList)),
-                join(",", ofNullable(n.getCc()).orElseGet(Collections::emptyList)),
-                join(",", ofNullable(n.getBcc()).orElseGet(Collections::emptyList)),
-                n.getType(),
-                n.getEventUri(),
-                n.getResourceUri());
+        NOTIFICATION_LOG.info(
+            "Successfully dispatched notification with id {} to [{}], cc [{}] bcc [{}] (Notification type: {}," +
+                "Event URI: {}, Resource URI: {})",
+            id,
+            join(",", ofNullable(n.getRecipients()).orElseGet(Collections::emptyList)),
+            join(",", ofNullable(n.getCc()).orElseGet(Collections::emptyList)),
+            join(",", ofNullable(n.getBcc()).orElseGet(Collections::emptyList)),
+            n.getType(),
+            n.getEventUri(),
+            n.getResourceUri());
 
     }
 
@@ -89,14 +90,16 @@ public class LoggingAspect {
         Notification n;
 
         if (ex instanceof DispatchException && (n = ((DispatchException) ex).getNotification()) != null) {
-            NOTIFICATION_LOG.warn("FAILED dispatching notification to [{}], cc [{}] bcc [{}] (Notification type: {}, Event URI: {}, Resource URI: {})",
-                    join(",", ofNullable(n.getRecipients()).orElseGet(Collections::emptyList)),
-                    join(",", ofNullable(n.getCc()).orElseGet(Collections::emptyList)),
-                    join(",", ofNullable(n.getBcc()).orElseGet(Collections::emptyList)),
-                    n.getType(),
-                    n.getEventUri(),
-                    n.getResourceUri(),
-                    ex);
+            NOTIFICATION_LOG.warn(
+                "FAILED dispatching notification to [{}], cc [{}] bcc [{}] (Notification type: {}, Event URI: {}," +
+                    "Resource URI: {})",
+                join(",", ofNullable(n.getRecipients()).orElseGet(Collections::emptyList)),
+                join(",", ofNullable(n.getCc()).orElseGet(Collections::emptyList)),
+                join(",", ofNullable(n.getBcc()).orElseGet(Collections::emptyList)),
+                n.getType(),
+                n.getEventUri(),
+                n.getResourceUri(),
+                ex);
             return;
         }
 

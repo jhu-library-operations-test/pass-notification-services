@@ -23,14 +23,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Predicate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dataconservancy.pass.notification.model.Link;
 import org.dataconservancy.pass.notification.model.config.LinkValidationRule;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author apb@jhu.edu
