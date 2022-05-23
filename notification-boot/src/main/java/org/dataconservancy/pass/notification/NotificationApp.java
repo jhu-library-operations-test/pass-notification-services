@@ -46,10 +46,8 @@ import org.springframework.core.env.Environment;
 @Import(SpringBootNotificationConfig.class)
 @ComponentScan("org.dataconservancy.pass")
 @EnableAspectJAutoProxy
+@SuppressWarnings({"PMD", "checkstyle:hideutilityclassconstructor"})
 public class NotificationApp {
-
-    private NotificationApp() {
-    }
 
     private static final Logger LOG = LoggerFactory.getLogger(NotificationApp.class);
 
