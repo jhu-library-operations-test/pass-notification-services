@@ -15,17 +15,17 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.notification.dispatch.DispatchException;
-import org.dataconservancy.pass.notification.model.Notification;
-import org.dataconservancy.pass.notification.model.config.NotificationConfig;
-import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
+import static java.util.Optional.ofNullable;
 
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.Optional.ofNullable;
+import org.dataconservancy.pass.notification.dispatch.DispatchException;
+import org.dataconservancy.pass.notification.model.Notification;
+import org.dataconservancy.pass.notification.model.config.NotificationConfig;
+import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -38,20 +38,23 @@ public class Parameterizer {
 
     private TemplateParameterizer parameterizer;
 
-    public Parameterizer(NotificationConfig notificationConfig, TemplateResolver templateResolver, TemplateParameterizer parameterizer) {
+    public Parameterizer(
+            NotificationConfig notificationConfig,
+            TemplateResolver templateResolver,
+            TemplateParameterizer parameterizer) {
         this.notificationConfig = notificationConfig;
         this.templateResolver = templateResolver;
         this.parameterizer = parameterizer;
     }
 
-    Map<NotificationTemplate.Name, String> resolveAndParameterize(Notification notification, Notification.Type notificationType) {
+    Map<NotificationTemplate.Name, String> resolveAndParameterize(
+            Notification notification, Notification.Type notificationType) {
         NotificationTemplate template = notificationConfig.getTemplates().stream()
                 .filter(candidate -> candidate.getNotificationType() == notificationType)
                 .findAny()
                 .orElseThrow(() ->
                         new DispatchException("Missing notification template for mode '" + notificationType + "'",
                                 notification));
-
 
         Map<NotificationTemplate.Name, InputStream> templates =
                 template.getTemplates()
@@ -66,6 +69,9 @@ public class Parameterizer {
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         entry -> parameterizer.parameterize(
-                                entry.getKey(), ofNullable(notification.getParameters()).orElseGet(Collections::emptyMap), entry.getValue())));
+                                entry.getKey(),
+                                ofNullable(notification.getParameters())
+                                    .orElseGet(Collections::emptyMap),
+                                entry.getValue())));
     }
 }

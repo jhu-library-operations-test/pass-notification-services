@@ -15,12 +15,12 @@
  */
 package org.dataconservancy.pass.notification.model.config.smtp;
 
-import org.dataconservancy.pass.notification.model.config.AbstractJacksonMappingTest;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.dataconservancy.pass.notification.model.config.AbstractJacksonMappingTest;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -35,7 +35,6 @@ public class SmtpServerConfigTest extends AbstractJacksonMappingTest {
             "      \"smtpPassword\": \"bar\",\n" +
             "      \"smtpTransport\": \"SMTP\"\n" +
             "    }";
-
 
     @Test
     public void parseJson() throws IOException {

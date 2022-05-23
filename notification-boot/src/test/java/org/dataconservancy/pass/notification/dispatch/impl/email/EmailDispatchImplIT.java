@@ -15,14 +15,44 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import static java.nio.charset.Charset.forName;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
+import static org.apache.commons.io.IOUtils.resourceToString;
+import static org.dataconservancy.pass.notification.impl.Links.serialized;
+import static org.dataconservancy.pass.notification.model.Link.Rels.SUBMISSION_REVIEW_INVITE;
+import static org.dataconservancy.pass.notification.model.Notification.Param.EVENT_METADATA;
+import static org.dataconservancy.pass.notification.model.Notification.Param.FROM;
+import static org.dataconservancy.pass.notification.model.Notification.Param.LINKS;
+import static org.dataconservancy.pass.notification.model.Notification.Param.RESOURCE_METADATA;
+import static org.dataconservancy.pass.notification.model.Notification.Param.TO;
+import static org.dataconservancy.pass.notification.model.Notification.Type.SUBMISSION_APPROVAL_INVITE;
+import static org.dataconservancy.pass.notification.util.PathUtil.packageAsPath;
+import static org.dataconservancy.pass.notification.util.mail.SimpleImapClient.getBodyAsText;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.stream.Collectors;
+import javax.mail.Message;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.model.SubmissionEvent;
 import org.dataconservancy.pass.model.User;
+import org.dataconservancy.pass.notification.NotificationApp;
 import org.dataconservancy.pass.notification.SimpleImapClientFactory;
 import org.dataconservancy.pass.notification.SpringBootIntegrationConfig;
-import org.dataconservancy.pass.notification.NotificationApp;
 import org.dataconservancy.pass.notification.dispatch.DispatchException;
 import org.dataconservancy.pass.notification.impl.Composer;
 import org.dataconservancy.pass.notification.impl.ComposerIT;
@@ -46,36 +76,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import javax.mail.Message;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.stream.Collectors;
-
-import static java.nio.charset.Charset.forName;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
-import static org.apache.commons.io.IOUtils.resourceToString;
-import static org.dataconservancy.pass.notification.impl.Links.serialized;
-import static org.dataconservancy.pass.notification.model.Link.Rels.SUBMISSION_REVIEW_INVITE;
-import static org.dataconservancy.pass.notification.model.Notification.Param.EVENT_METADATA;
-import static org.dataconservancy.pass.notification.model.Notification.Param.FROM;
-import static org.dataconservancy.pass.notification.model.Notification.Param.LINKS;
-import static org.dataconservancy.pass.notification.model.Notification.Param.RESOURCE_METADATA;
-import static org.dataconservancy.pass.notification.model.Notification.Param.TO;
-import static org.dataconservancy.pass.notification.model.Notification.Type.SUBMISSION_APPROVAL_INVITE;
-import static org.dataconservancy.pass.notification.util.PathUtil.packageAsPath;
-import static org.dataconservancy.pass.notification.util.mail.SimpleImapClient.getBodyAsText;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -189,7 +189,6 @@ public class EmailDispatchImplIT {
         assertNull(recipientMsg.getRecipients(Message.RecipientType.CC));
         assertNull(recipientMsg.getRecipients(Message.RecipientType.BCC));
 
-
         // must use a unique imap client instance for the BCC user (factory state is reset in setup)
         imapClientFactory.setImapUser(BCC);
         imapClientFactory.setImapPass("moo");
@@ -206,7 +205,8 @@ public class EmailDispatchImplIT {
     }
 
     /**
-     * Dispatching a notification with a PASS User URI as a recipient should result in the proper resolution of the {@code to} recipient.
+     * Dispatching a notification with a PASS User URI as a recipient should result in the proper resolution of the
+     * {@code to} recipient.
      */
     @Test
     public void dispatchResolveUserUri() throws Exception {
@@ -275,7 +275,8 @@ public class EmailDispatchImplIT {
     @Test
     public void subjectTemplateParameterization() throws Exception {
         Submission submission = new Submission();
-        submission.setMetadata(resourceToString("/" + packageAsPath(ComposerIT.class) + "/submission-metadata.json", forName("UTF-8")));
+        submission.setMetadata(resourceToString("/" + packageAsPath(ComposerIT.class) +
+                                                "/submission-metadata.json", forName("UTF-8")));
         submission.setId(SUBMISSION_RESOURCE_URI);
 
         SubmissionEvent event = new SubmissionEvent();
@@ -304,7 +305,7 @@ public class EmailDispatchImplIT {
         });
 
         config.setTemplates(singleton(template));
-        
+
         Link link = new Link(URI.create("http://example.org/email/dispatch/myLink"), SUBMISSION_REVIEW_INVITE);
 
         SimpleNotification n = new SimpleNotification();
@@ -337,7 +338,8 @@ public class EmailDispatchImplIT {
         String body = SimpleImapClient.getBodyAsText(message);
 
         assertTrue(body.contains("Dear " + n.getParameters().get(TO)));
-        assertTrue(body.contains("prepared on your behalf by " + n.getParameters().get(FROM)));  // TODO FROM will be the global FROM, must insure the preparer User is represented in metadata.
+        // todo: FROM will be the global FROM, must insure the preparer User is represented in metadata.
+        assertTrue(body.contains("prepared on your behalf by " + n.getParameters().get(FROM)));
         assertTrue(body.contains(event.getComment()));
         assertTrue(body.contains(expectedTitle));
         assertTrue(body.contains("Please review the submission at the following URL: " + link.getHref()));
@@ -365,14 +367,15 @@ public class EmailDispatchImplIT {
             boolean sfeFound = false;
             while (rootCause.getCause() != null) {
                 if (rootCause instanceof javax.mail.SendFailedException) {
-                        sfeFound = true;
-                        break;
+                    sfeFound = true;
+                    break;
                 }
                 rootCause = rootCause.getCause();
             }
 
             assertTrue("Missing expected javax.mail.SendFailedException in the stack trace.", sfeFound);
-            assertTrue("Expected the string 'Invalid Addresses' to be in the exception message.", rootCause.getMessage().contains("Invalid Addresses"));
+            assertTrue("Expected the string 'Invalid Addresses' to be in the exception message.",
+                       rootCause.getMessage().contains("Invalid Addresses"));
 
             return;
         }
@@ -443,7 +446,8 @@ public class EmailDispatchImplIT {
         assertEquals(1, message.getRecipients(Message.RecipientType.TO).length);
         assertEquals(whitelistEmail, message.getRecipients(Message.RecipientType.TO)[0].toString());
 
-        // The cc list does contain the expected address, because the global cc is not filtered through the whitelist at all
+        // The cc list does contain the expected address, because the global cc is not filtered through the whitelist
+        // at all
         assertEquals(1, message.getRecipients(Message.RecipientType.CC).length);
         assertEquals(GLOBAL_DEMO_CC_ADDRESS, message.getRecipients(Message.RecipientType.CC)[0].toString());
     }
@@ -496,7 +500,9 @@ public class EmailDispatchImplIT {
         Message message = Condition.getMessage(messageId, imapClient).call();
         assertNotNull(message);
 
-        Collection<String> actualRecipients = Arrays.stream(message.getAllRecipients()).map(Object::toString).collect(Collectors.toSet());
+        Collection<String> actualRecipients = Arrays.stream(message.getAllRecipients())
+                                                    .map(Object::toString)
+                                                    .collect(Collectors.toSet());
 
         assertTrue(actualRecipients.contains(RECIPIENT));
         assertTrue(actualRecipients.contains(secondRecipient));
@@ -510,9 +516,10 @@ public class EmailDispatchImplIT {
             Condition.newGetMessageCondition(messageId, facultyClient).await();
             secondMessage = Condition.getMessage(messageId, facultyClient).call();
             assertNotNull(secondMessage);
-            actualRecipients = Arrays.stream(secondMessage.getAllRecipients()).map(Object::toString).collect(Collectors.toSet());
+            actualRecipients = Arrays.stream(secondMessage.getAllRecipients())
+                                     .map(Object::toString)
+                                     .collect(Collectors.toSet());
         }
-
 
         assertTrue(actualRecipients.contains(RECIPIENT));
         assertTrue(actualRecipients.contains(secondRecipient));

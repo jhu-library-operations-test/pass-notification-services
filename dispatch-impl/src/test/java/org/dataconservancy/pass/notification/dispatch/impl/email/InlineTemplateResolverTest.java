@@ -18,14 +18,14 @@
 
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import static org.junit.Assert.*;
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 public class InlineTemplateResolverTest {
 
@@ -39,6 +39,7 @@ public class InlineTemplateResolverTest {
     @Test
     public void testResolve() throws IOException {
         String template = "Hello world!";
-        assertEquals(template, IOUtils.toString(underTest.resolve(null, template), Charset.forName("UTF-8")));
+        assertEquals(template, IOUtils.toString(underTest.resolve(null, template),
+                                                Charset.forName("UTF-8")));
     }
 }

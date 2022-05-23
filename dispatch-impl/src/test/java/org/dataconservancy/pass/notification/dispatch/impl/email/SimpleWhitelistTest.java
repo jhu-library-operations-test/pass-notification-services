@@ -15,19 +15,20 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.notification.model.config.RecipientConfig;
-import org.junit.Before;
-import org.junit.Test;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.dataconservancy.pass.notification.model.config.RecipientConfig;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -132,7 +133,6 @@ public class SimpleWhitelistTest {
         whitelist.add(candidate2);
         whitelist.add(whitelist3);
         whitelist.add(whitelist4);
-
 
         Collection<String> result = underTest.apply(Arrays.asList(candidate1, candidate2));
         assertEquals(2, result.size());

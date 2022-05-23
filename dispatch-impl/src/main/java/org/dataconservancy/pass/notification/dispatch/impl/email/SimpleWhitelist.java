@@ -15,25 +15,29 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.notification.model.config.RecipientConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.dataconservancy.pass.notification.model.config.RecipientConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Filters a list of notification recipients against a whitelist.
  * <p>
- * Provided a collection notification recipients, this function will determine which recipients are eligible for receiving the notification (i.e. whitelisted recipients), and return a collection containing the whitelisted addresses.
+ * Provided a collection notification recipients, this function will determine which recipients are eligible for
+ * receiving the notification (i.e. whitelisted recipients), and return a collection containing the whitelisted
+ * addresses.
  * </p>
  * <p>
- * The whitelist is configured in the notification services {@link RecipientConfig recipient configuration}.  If the configured whitelist is empty, then all notification recipients are considered to be whitelisted.
+ * The whitelist is configured in the notification services {@link RecipientConfig recipient configuration}.
+ * If the configured whitelist is empty, then all notification recipients are considered to be whitelisted.
  * </p>
  * <p>
- * A practical configuration is to use an empty whitelist in production, but provide a whitelist when performing testing or demonstrations, preventing notifications from being sent to recipients who didn't request them.
+ * A practical configuration is to use an empty whitelist in production, but provide a whitelist when performing
+ * testing or demonstrations, preventing notifications from being sent to recipients who didn't request them.
  * </p>
  *
  * @author Elliot Metsger (emetsger@jhu.edu)

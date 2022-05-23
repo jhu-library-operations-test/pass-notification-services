@@ -15,6 +15,12 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import static java.lang.String.join;
+
+import java.util.Arrays;
+import java.util.Map;
+import javax.mail.Message;
+
 import org.dataconservancy.pass.notification.dispatch.DispatchException;
 import org.dataconservancy.pass.notification.dispatch.DispatchService;
 import org.dataconservancy.pass.notification.model.Notification;
@@ -24,12 +30,6 @@ import org.simplejavamail.email.Email;
 import org.simplejavamail.mailer.Mailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.mail.Message;
-import java.util.Arrays;
-import java.util.Map;
-
-import static java.lang.String.join;
 
 /**
  * Dispatches {@link Notification}s as email messages.  Email templates are configured by {@link NotificationTemplate}s
@@ -87,8 +87,9 @@ public class EmailDispatchImpl implements DispatchService {
             email.getRecipients().stream()
                     .filter(r -> Message.RecipientType.TO == r.getType())
                     .findAny()
-                    .orElseThrow(() ->
-                            new DispatchException("Cannot dispatch email with an empty To: address for notification tuple [" + notificationTuple(notification) + "]", notification));
+                    .orElseThrow(() -> new DispatchException(
+                        "Cannot dispatch email with an empty To: address for notification tuple [" +
+                        notificationTuple(notification) + "]", notification));
 
             // send email
 

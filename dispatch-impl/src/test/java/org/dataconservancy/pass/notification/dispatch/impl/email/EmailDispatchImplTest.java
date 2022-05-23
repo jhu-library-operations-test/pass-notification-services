@@ -15,6 +15,24 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.function.Function;
+import javax.mail.Message.RecipientType;
+
 import org.apache.commons.io.IOUtils;
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.model.User;
@@ -30,24 +48,6 @@ import org.mockito.ArgumentCaptor;
 import org.simplejavamail.email.Email;
 import org.simplejavamail.email.Recipient;
 import org.simplejavamail.mailer.Mailer;
-
-import javax.mail.Message.RecipientType;
-import java.io.IOException;
-import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.function.Function;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -89,7 +89,6 @@ public class EmailDispatchImplTest {
             "]";
 
     private EmailDispatchImpl underTest;
-
 
     @Before
     @SuppressWarnings("unchecked")
@@ -154,6 +153,7 @@ public class EmailDispatchImplTest {
                     return "A Footer";
                 case BODY:
                     return "A Body";
+                default:
             }
 
             throw new RuntimeException("Unknown template name '" + name + "'");

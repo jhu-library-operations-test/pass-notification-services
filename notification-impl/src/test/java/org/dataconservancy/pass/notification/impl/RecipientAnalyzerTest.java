@@ -18,28 +18,25 @@
 
 package org.dataconservancy.pass.notification.impl;
 
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.SubmissionEvent;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.function.Function;
-
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.SubmissionEvent;
+import org.junit.Before;
+import org.junit.Test;
 
 public class RecipientAnalyzerTest {
 
@@ -96,7 +93,7 @@ public class RecipientAnalyzerTest {
     @Test
     public void analyzeCancelledByPreparer() {
         when(event.getPerformedBy()).thenReturn(URI.create(preparer1));
-        // FIXME other preparers should get a notification to
+        // fixme: other preparers should get a notification to
         perform(singleton(submitter), SubmissionEvent.EventType.CANCELLED);
     }
 

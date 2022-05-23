@@ -15,33 +15,6 @@
  */
 package org.dataconservancy.pass.notification.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.text.StringEscapeUtils;
-
-import org.dataconservancy.pass.authz.usertoken.Key;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.SubmissionEvent;
-import org.dataconservancy.pass.model.SubmissionEvent.EventType;
-import org.dataconservancy.pass.notification.model.Link;
-import org.dataconservancy.pass.notification.model.Notification;
-import org.dataconservancy.pass.notification.model.Notification.Param;
-import org.dataconservancy.pass.notification.model.config.Mode;
-import org.dataconservancy.pass.notification.model.config.NotificationConfig;
-import org.dataconservancy.pass.notification.model.config.RecipientConfig;
-import org.dataconservancy.pass.notification.model.config.UserTokenGeneratorConfig;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.dataconservancy.pass.notification.impl.Links.deserialize;
@@ -56,6 +29,30 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.text.StringEscapeUtils;
+import org.dataconservancy.pass.authz.usertoken.Key;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.SubmissionEvent;
+import org.dataconservancy.pass.model.SubmissionEvent.EventType;
+import org.dataconservancy.pass.notification.model.Link;
+import org.dataconservancy.pass.notification.model.Notification;
+import org.dataconservancy.pass.notification.model.Notification.Param;
+import org.dataconservancy.pass.notification.model.config.Mode;
+import org.dataconservancy.pass.notification.model.config.NotificationConfig;
+import org.dataconservancy.pass.notification.model.config.RecipientConfig;
+import org.dataconservancy.pass.notification.model.config.UserTokenGeneratorConfig;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -66,7 +63,8 @@ public class ComposerTest {
 
     private static final String NOTIFICATION_FROM_ADDRESS = "pass-production-noreply@jhu.edu";
 
-    private static final List<String> NOTIFICATION_GLOBAL_CC_ADDRESS = Arrays.asList("pass@jhu.edu", "pass-prod-cc@jhu.edu");
+    private static final List<String> NOTIFICATION_GLOBAL_CC_ADDRESS =
+        Arrays.asList("pass@jhu.edu", "pass-prod-cc@jhu.edu");
 
     private static final List<String> NOTIFICATION_GLOBAL_BCC_ADDRESS = singletonList("pass-prod-bcc@jhu.edu");
 
@@ -75,13 +73,12 @@ public class ComposerTest {
     private Function<Collection<String>, Collection<String>> whitelister;
 
     private NotificationConfig notificationConfig;
-    
+
     private SubmissionLinkAnalyzer submissionLinkAnalyzer;
-    
+
     private static final List<Link> generatedSubmissionLinks = asList(
             new Link(randomUri(), "rel1"),
             new Link(randomUri(), "rel2"));
-
 
     @Before
     @SuppressWarnings("unchecked")
@@ -100,20 +97,21 @@ public class ComposerTest {
         when(whitelister.apply(any())).thenAnswer(inv -> inv.getArgument(0));
         when(notificationConfig.getMode()).thenReturn(runtimeMode);
         when(notificationConfig.getRecipientConfigs()).thenReturn(singletonList(recipientConfig));
-        
+
         UserTokenGeneratorConfig userTokenConfig = new UserTokenGeneratorConfig();
         userTokenConfig.setKey(Key.generate().toString());
         when(notificationConfig.getUserTokenGeneratorConfig()).thenReturn(userTokenConfig);
 
         ObjectMapper mapper = new ObjectMapper();
-        
+
         submissionLinkAnalyzer = mock(SubmissionLinkAnalyzer.class);
         when(submissionLinkAnalyzer.apply(any(), any())).thenReturn(generatedSubmissionLinks.stream());
-        
+
         LinkValidator linkValidator = mock(LinkValidator.class);
         when(linkValidator.test(any())).thenReturn(true);
 
-        underTest = new Composer(notificationConfig, new RecipientAnalyzer(), submissionLinkAnalyzer, linkValidator, mapper);
+        underTest = new Composer(notificationConfig,
+                                 new RecipientAnalyzer(), submissionLinkAnalyzer, linkValidator, mapper);
     }
 
     /**
@@ -151,7 +149,7 @@ public class ComposerTest {
         assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_APPROVAL_INVITE, notification.getType());
 
-        // TODO test event metadata?
+        // todo: test event metadata?
 
         assertLinksPresent(notification, submission, event);
     }
@@ -187,8 +185,8 @@ public class ComposerTest {
         assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_APPROVAL_REQUESTED, notification.getType());
 
-        // TODO test event metadata?
-        
+        // todo: test event metadata?
+
         assertLinksPresent(notification, submission, event);
     }
 
@@ -222,8 +220,8 @@ public class ComposerTest {
         assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_CHANGES_REQUESTED, notification.getType());
 
-        // TODO test event metadata?
-        
+        // todo: test event metadata?
+
         assertLinksPresent(notification, submission, event);
     }
 
@@ -257,8 +255,8 @@ public class ComposerTest {
         assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_SUBMISSION_SUBMITTED, notification.getType());
 
-        // TODO test event metadata?
-        
+        // todo: test event metadata?
+
         assertLinksPresent(notification, submission, event);
     }
 
@@ -295,8 +293,8 @@ public class ComposerTest {
         assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_SUBMISSION_CANCELLED, notification.getType());
 
-        // TODO test event metadata?
-        
+        // todo: test event metadata?
+
         assertLinksPresent(notification, submission, event);
     }
 
@@ -333,8 +331,8 @@ public class ComposerTest {
         assertEquals(RESOURCE_METADATA, params.get(Param.RESOURCE_METADATA));
         assertEquals(Notification.Type.SUBMISSION_SUBMISSION_CANCELLED, notification.getType());
 
-        // TODO test event metadata?
-        
+        // todo: test event metadata?
+
         assertLinksPresent(notification, submission, event);
     }
 
@@ -400,19 +398,19 @@ public class ComposerTest {
 
         assertFalse(Composer.RecipientConfigFilter.modeFilter(config).test(disabled));
     }
-    
+
     void assertLinksPresent(Notification notification, Submission submission, SubmissionEvent event) {
-        
+
         // Make sure the submission link analyzer was called with the appropriate arguments
         verify(submissionLinkAnalyzer).apply(eq(submission), eq(event));
-        
+
         // Make sure the generated links are attached.
         String serializedLinks = notification.getParameters().get(Notification.Param.LINKS);
         assertNotNull(serializedLinks);
-        
+
         Collection<Link> deserializedLinks = deserialize(serializedLinks);
         assertEquals(generatedSubmissionLinks.size(), deserializedLinks.size());
         assertTrue(deserializedLinks.containsAll(generatedSubmissionLinks));
-        
+
     }
 }

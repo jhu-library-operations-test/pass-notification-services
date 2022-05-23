@@ -15,12 +15,12 @@
  */
 package org.dataconservancy.pass.notification.impl;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.net.URI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

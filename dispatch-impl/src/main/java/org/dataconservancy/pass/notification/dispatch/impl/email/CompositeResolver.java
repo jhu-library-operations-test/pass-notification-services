@@ -15,16 +15,16 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Attempts to resolve a named template using a list of template resolvers.

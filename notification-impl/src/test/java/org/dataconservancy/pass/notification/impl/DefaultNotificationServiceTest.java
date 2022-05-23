@@ -18,6 +18,19 @@
 
 package org.dataconservancy.pass.notification.impl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.dataconservancy.pass.client.PassClient;
 import org.dataconservancy.pass.client.PassJsonAdapter;
 import org.dataconservancy.pass.client.adapter.PassJsonAdapterBasic;
@@ -27,23 +40,6 @@ import org.dataconservancy.pass.notification.dispatch.DispatchService;
 import org.dataconservancy.pass.notification.model.Notification;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonList;
-import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 public class DefaultNotificationServiceTest {
 
@@ -168,7 +164,8 @@ public class DefaultNotificationServiceTest {
     @Test
     public void selfSubmissionPreparerContainsSubmitter() {
 
-        // mock a self submission where Submission.preparer contains multiple URIs, one of them is the URI of the submitter
+        // mock a self submission where Submission.preparer contains multiple URIs, one of them is the URI of the
+        // submitter
 
         SubmissionPreparer sp = new SubmissionPreparer().invoke(passClient);
 
@@ -226,7 +223,6 @@ public class DefaultNotificationServiceTest {
         // Prepare the, Submission, SubmissionEvent, and PassClient to use a concrete Submission deserialized from the
         // the test JSON above
         SubmissionPreparer sp = new SubmissionPreparer().invoke(passClient, context34submission);
-
 
         Notification n = mock(Notification.class);
         when(composer.apply(sp.submission, sp.event)).thenReturn(n);

@@ -15,16 +15,16 @@
  */
 package org.dataconservancy.pass.notification;
 
+import java.util.Properties;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+
 import com.sun.mail.imap.IMAPStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import java.util.Properties;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

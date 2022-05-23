@@ -32,13 +32,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
-import org.dataconservancy.pass.notification.model.Link;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.dataconservancy.pass.notification.model.Link;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for working with streams of {@link Link}
@@ -46,6 +44,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author apb@jhu.edu
  */
 public class Links {
+
+    private Links() {
+    }
 
     private static Logger LOG = LoggerFactory.getLogger(Links.class);
 

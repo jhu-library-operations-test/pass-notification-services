@@ -21,6 +21,10 @@ import org.dataconservancy.pass.notification.dispatch.impl.email.EmailDispatchIm
  * @author Elliot Metsger (emetsger@jhu.edu)
  */
 public class PathUtil {
+
+    private PathUtil() {
+    }
+
     public static String packageAsPath() {
         return packageAsPath(EmailDispatchImplIT.class);
     }

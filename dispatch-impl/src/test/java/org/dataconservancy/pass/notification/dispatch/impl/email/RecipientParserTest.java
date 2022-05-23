@@ -18,19 +18,19 @@
 
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.model.User;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.net.URI;
-import java.util.Collections;
-
 import static org.dataconservancy.pass.notification.dispatch.impl.email.RecipientParser.parseRecipientUris;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.util.Collections;
+
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.model.User;
+import org.junit.Before;
+import org.junit.Test;
 
 public class RecipientParserTest {
 

@@ -15,6 +15,9 @@
  */
 package org.dataconservancy.pass.notification.aop.logging;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.dataconservancy.pass.notification.NotificationApp;
 import org.dataconservancy.pass.notification.dispatch.DispatchService;
 import org.junit.Test;
@@ -23,9 +26,6 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Simply checks to see that the Dispatch implementation is an Advised instance.

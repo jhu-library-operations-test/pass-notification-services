@@ -15,16 +15,16 @@
  */
 package org.dataconservancy.pass.notification.model.config.template;
 
-import org.dataconservancy.pass.notification.model.Notification;
-import org.dataconservancy.pass.notification.model.config.AbstractJacksonMappingTest;
-import org.junit.Test;
-
-import java.io.IOException;
-
 import static org.dataconservancy.pass.notification.model.config.template.NotificationTemplate.Name.BODY;
 import static org.dataconservancy.pass.notification.model.config.template.NotificationTemplate.Name.FOOTER;
 import static org.dataconservancy.pass.notification.model.config.template.NotificationTemplate.Name.SUBJECT;
 import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+
+import org.dataconservancy.pass.notification.model.Notification;
+import org.dataconservancy.pass.notification.model.config.AbstractJacksonMappingTest;
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

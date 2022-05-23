@@ -159,10 +159,12 @@ public class SimpleNotification implements Notification {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         SimpleNotification that = (SimpleNotification) o;
         return Objects.equals(recipients, that.recipients) &&
                 Objects.equals(sender, that.sender) &&

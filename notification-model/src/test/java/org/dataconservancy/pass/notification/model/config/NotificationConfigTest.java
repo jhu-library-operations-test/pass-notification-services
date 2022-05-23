@@ -15,14 +15,15 @@
  */
 package org.dataconservancy.pass.notification.model.config;
 
-import org.junit.Test;
-
-import java.io.IOException;
-
 import static org.dataconservancy.pass.notification.model.Notification.Type.SUBMISSION_APPROVAL_INVITE;
 import static org.dataconservancy.pass.notification.model.config.Mode.DEMO;
 import static org.dataconservancy.pass.notification.model.config.Mode.PRODUCTION;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+
+import org.junit.Test;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -85,7 +86,8 @@ public class NotificationConfigTest extends AbstractJacksonMappingTest {
         assertEquals(1, config.getTemplates().size());
         config.getTemplates()
                 .stream().filter(tc -> tc.getNotificationType() == SUBMISSION_APPROVAL_INVITE).findAny()
-                .orElseThrow(() -> new RuntimeException("Missing NotificationTemplate for type SUBMISSION_APPROVAL_INVITE"));
+                .orElseThrow(() -> new RuntimeException(
+                    "Missing NotificationTemplate for type SUBMISSION_APPROVAL_INVITE"));
         assertNotNull(config.getSmtpConfig());
         assertEquals("smtp.gmail.com", config.getSmtpConfig().getHost());
         assertRoundTrip(config, NotificationConfig.class);

@@ -15,6 +15,12 @@
  */
 package org.dataconservancy.pass.notification.app.config;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.function.Function;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.jknack.handlebars.EscapingStrategy;
@@ -55,12 +61,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * Primary Spring Boot configuration class for Notification Services
@@ -206,13 +206,13 @@ public class SpringBootNotificationConfig {
     @Bean
     public Mailer mailer(NotificationConfig config) {
         SmtpServerConfig smtpConfig = config.getSmtpConfig();
-        Objects.requireNonNull(smtpConfig, "Missing SMTP server configuration from '" + notificationConfiguration + "'");
+        Objects.requireNonNull(smtpConfig,
+                               "Missing SMTP server configuration from '" + notificationConfiguration + "'");
         MailerBuilder.MailerRegularBuilder builder = MailerBuilder
                 .withSMTPServerHost(smtpConfig.getHost())
                 .withSMTPServerPort(Integer.parseInt(smtpConfig.getPort()))
                 .withTransportStrategy(TransportStrategy.valueOf(smtpConfig.getSmtpTransport().toUpperCase()))
                 .withDebugLogging(mailerDebug);
-
 
         if (smtpConfig.getSmtpUser() != null && smtpConfig.getSmtpUser().trim().length() > 0) {
             builder = builder.withSMTPServerUsername(smtpConfig.getSmtpUser())
@@ -236,17 +236,17 @@ public class SpringBootNotificationConfig {
     public RecipientAnalyzer recipientAnalyzer(Function<Collection<String>, Collection<String>> simpleWhitelist) {
         return new RecipientAnalyzer();
     }
-   
+
     @Bean
     public UserTokenGenerator userTokenGenerator(NotificationConfig config) {
         return new UserTokenGenerator(config);
     }
-    
+
     @Bean
     public SubmissionLinkAnalyzer submissionLinkAnalyzer(UserTokenGenerator generator) {
         return new SubmissionLinkAnalyzer(generator);
     }
-    
+
     @Bean
     public LinkValidator linkValidator(NotificationConfig config) {
         return new LinkValidator(config);
@@ -259,7 +259,10 @@ public class SpringBootNotificationConfig {
     }
 
     @Bean
-    public DefaultNotificationService notificationService(PassClient passClient, Composer composer, DispatchService dispatchService) {
+    public DefaultNotificationService notificationService(
+            PassClient passClient,
+            Composer composer,
+            DispatchService dispatchService) {
         return new DefaultNotificationService(passClient, dispatchService, composer);
     }
 }

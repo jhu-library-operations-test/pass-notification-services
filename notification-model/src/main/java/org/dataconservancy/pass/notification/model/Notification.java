@@ -28,7 +28,8 @@ public interface Notification {
 
     /**
      * Type of Notification
-     * TODO: see how these line up with SubmissionEvent, and potentially use the SubmissionEvent name as the notification type.
+     * todo: see how these line up with SubmissionEvent, and potentially use the SubmissionEvent name as the
+     * notification type.
      */
     enum Type {
 

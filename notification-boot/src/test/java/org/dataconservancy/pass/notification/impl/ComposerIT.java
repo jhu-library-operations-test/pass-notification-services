@@ -18,38 +18,6 @@
 
 package org.dataconservancy.pass.notification.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.dataconservancy.pass.client.PassClient;
-import org.dataconservancy.pass.model.Submission;
-import org.dataconservancy.pass.model.SubmissionEvent;
-import org.dataconservancy.pass.notification.NotificationApp;
-import org.dataconservancy.pass.notification.model.Link;
-import org.dataconservancy.pass.notification.model.Notification;
-import org.dataconservancy.pass.notification.model.config.Mode;
-import org.dataconservancy.pass.notification.model.config.NotificationConfig;
-import org.dataconservancy.pass.notification.model.config.RecipientConfig;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import static java.lang.String.join;
 import static java.nio.charset.Charset.forName;
 import static java.util.Collections.singleton;
@@ -76,6 +44,37 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.dataconservancy.pass.client.PassClient;
+import org.dataconservancy.pass.model.Submission;
+import org.dataconservancy.pass.model.SubmissionEvent;
+import org.dataconservancy.pass.notification.NotificationApp;
+import org.dataconservancy.pass.notification.model.Link;
+import org.dataconservancy.pass.notification.model.Notification;
+import org.dataconservancy.pass.notification.model.config.Mode;
+import org.dataconservancy.pass.notification.model.config.NotificationConfig;
+import org.dataconservancy.pass.notification.model.config.RecipientConfig;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringRunner;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NotificationApp.class)
 public class ComposerIT {
@@ -95,7 +94,7 @@ public class ComposerIT {
     private Submission submission;
 
     private SubmissionEvent submissionEvent;
-    
+
     private URI eventLink = URI.create("http://example.org/eventLink");
 
     @Autowired
@@ -147,7 +146,8 @@ public class ComposerIT {
     }
 
     /**
-     * When the Submission's Submitter URI is not null, it should take precedence over the use of the Submission's Submitter Email URI.
+     * When the Submission's Submitter URI is not null, it should take precedence over the use of the Submission's
+     * Submitter Email URI.
      */
     @Test
     public void testNonNullSubmissionSubmitterUri() {
@@ -224,7 +224,9 @@ public class ComposerIT {
         Arrays.stream(Mode.values()).forEach(mode -> {
             config.setMode(mode);
             assertEquals(mode, new Composer(config, mapper).getRecipientConfig().getMode());
-            assertEquals(rcs.get(mode).getFromAddress(), new Composer(config, mapper).getRecipientConfig().getFromAddress());
+            assertEquals(
+                rcs.get(mode).getFromAddress(), new Composer(config, mapper).getRecipientConfig().getFromAddress()
+            );
         });
     }
 
@@ -290,14 +292,14 @@ public class ComposerIT {
             submission.setId(URI.create(submissionId));
             submission.setPreparers(preparers.stream().map(URI::create).collect(Collectors.toList()));
             submission.setSubmitter(URI.create(submitter));
-            
+
             if (SubmissionEvent.EventType.APPROVAL_REQUESTED_NEWUSER.equals(eventType)) {
                 // from submitter URIs to submitter email+name
                 submission.setSubmitter(null);
                 submission.setSubmitterEmail(URI.create("mailto:nobody@example.org"));
                 submission.setSubmitterName("moo!");
             }
-            
+
             assertEquals(expectedMapping.get(eventType), composer.apply(submission, event).getType());
         });
     }
@@ -333,17 +335,17 @@ public class ComposerIT {
         Map<Notification.Param, String> params = n.getParameters();
 
         assertEquals(Composer.resourceMetadata(submission, mapper), params.get(RESOURCE_METADATA));
-        // TODO Params map contains URIs of recipients at this point, they've not been resolved to email addresses
-        // TODO Recipient URIs aren't resolved until Dispatch
+        // todo: Params map contains URIs of recipients at this point, they've not been resolved to email addresses
+        // todo: Recipient URIs aren't resolved until Dispatch
         assertEquals(to, params.get(TO));
         assertEquals(getRecipientConfig(config).getFromAddress(), params.get(FROM));
         assertEquals(join(",", getRecipientConfig(config).getGlobalCc()), params.get(CC));
         assertEquals(Composer.eventMetadata(event, mapper), params.get(EVENT_METADATA));
         JsonNode eventMdNode = mapper.readTree(params.get(EVENT_METADATA));
         assertEquals(event.getId().toString(), Composer.field("id", eventMdNode).get());
-        // TODO remove Subject?  Unset at this point, since templates haven't been resolved or parameterized
+        // todo: remove Subject?  Unset at this point, since templates haven't been resolved or parameterized
         assertNull(params.get(SUBJECT));
-        
+
         String serializedLinks = params.get(LINKS);
         assertNotNull(serializedLinks);
         List<Link> deserializedLinks = new ArrayList(deserialize(serializedLinks));
@@ -351,7 +353,7 @@ public class ComposerIT {
         assertEquals(SUBMISSION_REVIEW_INVITE, deserializedLinks.get(0).getRel());
         assertTrue(deserializedLinks.get(0).getHref().toString().contains(eventLink.toString()));
         assertNotSame(eventLink, deserializedLinks.get(0).getHref());
-        
+
     }
 
     private static String packageAsPath() {

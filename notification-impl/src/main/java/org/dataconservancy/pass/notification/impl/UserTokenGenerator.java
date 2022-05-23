@@ -26,7 +26,6 @@ import org.dataconservancy.pass.authz.usertoken.TokenFactory;
 import org.dataconservancy.pass.model.Submission;
 import org.dataconservancy.pass.notification.model.Link;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -15,12 +15,12 @@
  */
 package org.dataconservancy.pass.notification.model.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)

@@ -15,22 +15,21 @@
  */
 package org.dataconservancy.pass.notification.util.async;
 
-import org.dataconservancy.pass.notification.util.mail.SimpleImapClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-import javax.mail.Message;
-import javax.mail.search.SearchTerm;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
+import javax.mail.Message;
+import javax.mail.search.SearchTerm;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import org.dataconservancy.pass.notification.util.mail.SimpleImapClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -148,8 +147,10 @@ public class Condition<T> {
      * @param imapClient a fully configured IMAP client
      * @return the Condition.
      */
+    @SuppressWarnings("checkstyle:LineLength")
     public static Condition<Collection<Message>> newSearchMessageCondition(SearchTerm term, SimpleImapClient imapClient) {
-        Condition<Collection<Message>> c = new Condition<>(searchMessage(term, imapClient), m -> m.size() > 0, "Search messages");
+        Condition<Collection<Message>> c =
+            new Condition<>(searchMessage(term, imapClient), m -> m.size() > 0, "Search messages");
         c.setTimeoutThresholdMs(60000);
         return c;
     }
@@ -241,7 +242,8 @@ public class Condition<T> {
                     submitInternal();
                 }
             } catch (InterruptedException ie) {
-                LOG.debug("Condition {} was interrupted after {} ms; aborting.", name, System.currentTimeMillis() - start);
+                LOG.debug("Condition {} was interrupted after {} ms; aborting.", name,
+                          System.currentTimeMillis() - start);
                 result = false;
                 failureException = ie;
                 break;
@@ -250,10 +252,12 @@ public class Condition<T> {
                 failureException = e;
                 try {
                     Thread.sleep(backoffMs);
-                    // must re-submit after catching an exception, because Future.get will perpetually return the exception unless the Future is re-executed
+                    // must re-submit after catching an exception, because Future.get will perpetually return the
+                    // exception unless the Future is re-executed
                     submitInternal();
                 } catch (InterruptedException ie) {
-                    LOG.debug("Condition {} was interrupted after {} ms; aborting.", name, System.currentTimeMillis() - start);
+                    LOG.debug("Condition {} was interrupted after {} ms; aborting.", name,
+                              System.currentTimeMillis() - start);
                     result = false;
                     failureException = ie;
                     break;
@@ -265,7 +269,8 @@ public class Condition<T> {
         if (result == null || !result) {
             LOG.warn("Condition {} failed, elapsed time {} ms", name, System.currentTimeMillis() - start);
             if (failureException != null) {
-                LOG.warn("Condition {} failed with exception: {}", name, failureException.getMessage(), failureException);
+                LOG.warn("Condition {} failed with exception: {}", name,
+                         failureException.getMessage(), failureException);
             }
             this.result = false;
         } else {
@@ -288,7 +293,6 @@ public class Condition<T> {
         this.submitted = true;
         this.conditionFuture = executorService.submit(condition);
     }
-
 
     public ExecutorService getExecutorService() {
         return executorService;

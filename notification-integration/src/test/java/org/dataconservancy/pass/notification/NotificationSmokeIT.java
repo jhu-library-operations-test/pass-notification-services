@@ -15,6 +15,22 @@
  */
 package org.dataconservancy.pass.notification;
 
+import static java.nio.charset.Charset.forName;
+import static org.apache.commons.io.IOUtils.resourceToString;
+import static org.dataconservancy.pass.notification.model.Link.Rels.SUBMISSION_REVIEW;
+import static org.dataconservancy.pass.notification.model.Link.Rels.SUBMISSION_REVIEW_INVITE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
+import javax.mail.Message;
+import javax.mail.search.HeaderTerm;
+
 import okhttp3.Credentials;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -38,22 +54,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.mail.Message;
-import javax.mail.search.HeaderTerm;
-import java.io.IOException;
-import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-
-import static java.nio.charset.Charset.forName;
-import static org.apache.commons.io.IOUtils.resourceToString;
-import static org.dataconservancy.pass.notification.model.Link.Rels.SUBMISSION_REVIEW;
-import static org.dataconservancy.pass.notification.model.Link.Rels.SUBMISSION_REVIEW_INVITE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Treats Notification Services as a black box by introspecting the side affects of creating submissions that require
@@ -136,6 +136,7 @@ public class NotificationSmokeIT {
      * A search of the IMAP inbox using the Submission URI should find one Message that matches the expected
      * notification.
      */
+    @SuppressWarnings("checkstyle:LineLength")
     @Test
     public void readContext34submissionResource() throws Exception {
         LOG.info("Using JSON-LD context uri {} when creating resources.", contextUri);
@@ -151,7 +152,8 @@ public class NotificationSmokeIT {
                 "  \"integrationType\" : \"full\",\n" +
                 "  \"name\" : \"JScholarship\",\n" +
                 "  \"repositoryKey\" : \"jscholarship\",\n" +
-                "  \"schemas\" : [ \"https://oa-pass.github.io/metadata-schemas/jhu/common.json\", \"https://oa-pass.github.io/metadata-schemas/jhu/jscholarship.json\" ],\n" +
+                "  \"schemas\" : [ \"https://oa-pass.github.io/metadata-schemas/jhu/common.json\", " +
+                              "\"https://oa-pass.github.io/metadata-schemas/jhu/jscholarship.json\" ],\n" +
                 "  \"url\" : \"https://jscholarship.library.jhu.edu/\",\n" +
                 "  \"@context\" : \"" + contextUri + "\"\n" +
                 "}";
@@ -257,7 +259,6 @@ public class NotificationSmokeIT {
         // Create the resource in Fedora
         String submissionUri = createResource(fedoraBaseUrl, "submissions", submission);
 
-
         SubmissionEvent event = new SubmissionEvent();
         event.setSubmission(URI.create(submissionUri));
         event.setPerformerRole(SubmissionEvent.PerformerRole.PREPARER);
@@ -313,11 +314,13 @@ public class NotificationSmokeIT {
         preparer = passClient.createAndReadResource(preparer, User.class);
 
         // The Submission as prepared by the preparer.
-        // The preparer did not find the authorized submitter in PASS, so they filled in the email address of the authorized submitter
-        // Therefore, the Submission.submitter field will be null (because that *must* be a URI to a User resource, and the User does not exist)
-        // The Submission.submitterEmail will be set to the email address of the authorized submitter
+        // The preparer did not find the authorized submitter in PASS, so they filled in the email address of the
+        // authorized submitter. Therefore, the Submission.submitter field will be null (because that *must* be a URI
+        // to a User resource, and the User does not exist). The Submission.submitterEmail will be set to the email
+        // address of the authorized submitter
         Submission submission = new Submission();
-        submission.setMetadata(resourceToString("/" + PathUtil.packageAsPath(ComposerIT.class) + "/submission-metadata.json", forName("UTF-8")));
+        submission.setMetadata(resourceToString("/" + PathUtil.packageAsPath(ComposerIT.class) +
+                                                "/submission-metadata.json", forName("UTF-8")));
         submission.setPreparers(Collections.singletonList(preparer.getId()));
         submission.setSource(Submission.Source.PASS);
         submission.setSubmitter(null);
@@ -326,7 +329,8 @@ public class NotificationSmokeIT {
         submission = passClient.createAndReadResource(submission, Submission.class);
 
         // When this event is processed, the authorized submitter will recieve an email notification with a link that
-        // will invite them to use PASS, and link the Submission to their newly created User (created when they login to PASS for the first time)
+        // will invite them to use PASS, and link the Submission to their newly created User (created when they login
+        // to PASS for the first time)
         SubmissionEvent event = new SubmissionEvent();
         event.setSubmission(submission.getId());
         event.setPerformerRole(SubmissionEvent.PerformerRole.PREPARER);
@@ -389,16 +393,17 @@ public class NotificationSmokeIT {
         submitter.setRoles(Collections.singletonList(User.Role.SUBMITTER));
         submitter = passClient.createAndReadResource(submitter, User.class);
 
-
         // The Submission as prepared by the preparer.
         Submission submission = new Submission();
-        submission.setMetadata(resourceToString("/" + PathUtil.packageAsPath(ComposerIT.class) + "/submission-metadata.json", forName("UTF-8")));
+        submission.setMetadata(resourceToString("/" + PathUtil.packageAsPath(ComposerIT.class) +
+                                                "/submission-metadata.json", forName("UTF-8")));
         submission.setPreparers(Collections.singletonList(preparer.getId()));
         submission.setSource(Submission.Source.PASS);
         submission.setSubmitter(submitter.getId());
         submission = passClient.createAndReadResource(submission, Submission.class);
 
-        // When this event is processed, the BCC address should receive the email (because the configuration used by this IT has a global BCC address configured)
+        // When this event is processed, the BCC address should receive the email (because the configuration used
+        // by this IT has a global BCC address configured)
         SubmissionEvent event = new SubmissionEvent();
         event.setSubmission(submission.getId());
         event.setPerformerRole(SubmissionEvent.PerformerRole.PREPARER);
@@ -426,13 +431,13 @@ public class NotificationSmokeIT {
             assertNotNull(messages);
             assertEquals(1, messages.size());
 
-
             Message message = messages.iterator().next();
             String body = SimpleImapClient.getBodyAsText(message);
             assertTrue(message.getSubject().contains("Specific protein supplementation using soya"));
             assertTrue(message.getSubject().contains("approval"));
             assertEquals(SENDER, message.getFrom()[0].toString());
-            assertEquals("staffWithGrants@jhu.edu", message.getRecipients(Message.RecipientType.TO)[0].toString());
+            assertEquals("staffWithGrants@jhu.edu",
+                         message.getRecipients(Message.RecipientType.TO)[0].toString());
             assertTrue(body.contains("https://pass.local"));
             assertTrue(body.contains(submissionUri.substring(submissionUri.lastIndexOf("/"))));
             assertTrue(body.contains(comment));

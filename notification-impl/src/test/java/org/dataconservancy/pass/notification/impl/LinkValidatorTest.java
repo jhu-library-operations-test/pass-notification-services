@@ -28,7 +28,6 @@ import java.util.Set;
 import org.dataconservancy.pass.notification.model.Link;
 import org.dataconservancy.pass.notification.model.config.LinkValidationRule;
 import org.dataconservancy.pass.notification.model.config.NotificationConfig;
-
 import org.junit.Before;
 import org.junit.Test;
 

@@ -15,10 +15,10 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+
+import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
 
 /**
  * Considers the supplied template to be "inline".

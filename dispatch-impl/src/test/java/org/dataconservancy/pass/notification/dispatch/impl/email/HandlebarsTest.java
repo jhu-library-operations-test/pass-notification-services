@@ -18,15 +18,15 @@
 
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
+import org.junit.Before;
+import org.junit.Test;
 
 public class HandlebarsTest {
 

@@ -15,19 +15,19 @@
  */
 package org.dataconservancy.pass.notification.dispatch.impl.email;
 
-import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.UrlResource;
+import static java.lang.String.format;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.InvalidPathException;
 
-import static java.lang.String.format;
+import org.dataconservancy.pass.notification.model.config.template.NotificationTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.UrlResource;
 
 /**
  * @author Elliot Metsger (emetsger@jhu.edu)
@@ -54,7 +54,7 @@ public class SpringUriTemplateResolver implements TemplateResolver {
             }
 
             if (template.startsWith("file:") || template.startsWith("http:") || template.startsWith("https:")) {
-                // TODO handle authenticated endpoints; cf. deposit services for impl
+                // todo: handle authenticated endpoints; cf. deposit services for impl
                 return new UrlResource(template).getInputStream();
             }
         } catch (IOException e) {
@@ -62,7 +62,6 @@ public class SpringUriTemplateResolver implements TemplateResolver {
                     name, template, e.getMessage());
             throw new RuntimeException(msg, e);
         }
-
 
         // assume file
 
