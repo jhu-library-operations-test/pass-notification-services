@@ -14,14 +14,14 @@ jobs:
 
   call-workaround:
     name: Run Parent POM Workaround
-    uses: eclipse-pass/pass-deposit-services/.github/workflows/parent-pom-workaround.yml@main
+    uses: jhu-library-operations-test/pass-deposit-services/.github/workflows/parent-pom-workaround.yml@main
   
   call-tests-unit:
     name: Run Unit Tests
-    uses: eclipse-pass/pass-deposit-services/.github/workflows/tests-unit.yml@main
+    uses: jhu-library-operations-test/pass-deposit-services/.github/workflows/tests-unit.yml@main
     needs: call-workaround
     
   call-tests-integration:
     name: Run Integration Tests
-    uses: eclipse-pass/pass-deposit-services/.github/workflows/tests-integration.yml@main
+    uses: jhu-library-operations-test/pass-deposit-services/.github/workflows/tests-integration.yml@main
     needs: call-workaround
