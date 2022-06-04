@@ -26,7 +26,7 @@
 
     <groupId>org.dataconservancy.pass.notify</groupId>
     <artifactId>notify-parent</artifactId>
-    <version>0.1.1-3.4-SNAPSHOT</version>
+    <version>0.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Notification Services</name>
     <description>Compose and dispatch notifications to users based on PASS events</description>
