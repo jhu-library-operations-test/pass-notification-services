@@ -49,6 +49,9 @@ import org.springframework.core.env.Environment;
 @SuppressWarnings({"PMD", "checkstyle:hideutilityclassconstructor"})
 public class NotificationApp {
 
+    protected NotificationApp() {
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(NotificationApp.class);
 
     private static final String GIT_BUILD_VERSION_KEY = "git.build.version";
