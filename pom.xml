@@ -106,38 +106,6 @@
             </properties>
         </profile>
 
-        <profile>
-            <id>release</id>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <artifactId>maven-gpg-plugin</artifactId>
-                            <version>${maven-gpg-plugin.version}</version>
-                            <executions>
-                                <execution>
-                                    <id>sign-artifacts</id>
-                                    <phase>verify</phase>
-                                    <goals>
-                                        <goal>sign</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                            <configuration>
-                                <useAgent>true</useAgent>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
     </profiles>
 
     <properties>
@@ -155,14 +123,10 @@
         <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
         <maven.resources.plugin.version>3.1.0</maven.resources.plugin.version>
         <maven.shade.plugin.version>2.4.3</maven.shade.plugin.version>
-        <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
-        <maven.wagon.ssh.version>2.10</maven.wagon.ssh.version>
         <maven.remote-resources.plugin.version>1.5</maven.remote-resources.plugin.version>
         <codehaus.build-helper.plugin.version>1.10</codehaus.build-helper.plugin.version>
         <fabric8.docker.maven.plugin.version>0.27.2</fabric8.docker.maven.plugin.version>
         <git-commit-plugin.version>2.2.4</git-commit-plugin.version>
-        <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
-        <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
         <slf4j.version>1.7.25</slf4j.version>
@@ -506,22 +470,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>${maven.resources.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven.deploy.plugin.version}</version>
-                    <configuration>
-                        <retryFailedDeploymentCount>5</retryFailedDeploymentCount>
-                    </configuration>
-                    <!-- See https://jira.codehaus.org/browse/WAGON-393 -->
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.apache.maven.wagon</groupId>
-                            <artifactId>wagon-ssh</artifactId>
-                            <version>${maven.wagon.ssh.version}</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
 
                 <plugin>
@@ -914,52 +862,6 @@
         </dependencies>
 
     </dependencyManagement>
-
-    <repositories>
-
-        <repository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-            <snapshots><enabled>true</enabled></snapshots>
-        </repository>
-
-        <repository>
-            <id>spring-libs-snap</id>
-            <name>Spring Snapshots</name>
-            <url>https://repo.spring.io/libs-snapshot</url>
-            <snapshots><enabled>true</enabled></snapshots>
-        </repository>
-
-        <repository>
-            <id>dc.public.releases</id>
-            <name>Data Conservancy Release Maven Repository</name>
-            <url>http://maven.dataconservancy.org/public/releases/</url>
-            <snapshots><enabled>false</enabled></snapshots>
-        </repository>
-
-        <repository>
-            <id>dc.public.snapshots</id>
-            <name>Data Conservancy Snapshot Maven Repository</name>
-            <url>http://maven.dataconservancy.org/public/snapshots/</url>
-            <snapshots><enabled>true</enabled></snapshots>
-        </repository>
-
-    </repositories>
-
-    <distributionManagement>
-
-        <repository>
-            <id>maven-central-staging</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-
-        <snapshotRepository>
-            <id>oss.snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-
-    </distributionManagement>
 
     <scm>
         <connection>scm:git:https://github.com/OA-PASS/notification-services.git</connection>
